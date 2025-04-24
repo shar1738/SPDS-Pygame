@@ -1,6 +1,6 @@
 import pygame as pg
-import Main.settings as S
 import sys
+import Main.settings as S
 from Main.constants import load_assets
 
 # Default positions configuration
@@ -64,6 +64,4 @@ class Exterior:
 
 
 if __name__ == "__main__":
-    from settings import Settings
-    settings = Settings()
-    Exterior(settings).run()
+    Exterior.run()

@@ -1,6 +1,6 @@
 import pygame as pg
-import Scene.settings as S
 import sys
+import Main.settings as S
 
 class MainMenu:
     def __init__(self):
