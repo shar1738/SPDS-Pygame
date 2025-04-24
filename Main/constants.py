@@ -6,10 +6,10 @@ ASSET_CONFIG = {
         "size": (128, 128),
         "hitbox_offset": (32, 32, 64, 64),  
     },
-    "asteroid1": {
+    "aster1": {
         "path": "Assets/images/asteroid1.png",
-        "size": (256, 256),
-        "hitbox_offset": (40, 40, 176, 176),
+        "size": (128, 128),
+        "hitbox_offset": (32, 32, 64, 64),
     },
     "ship": {
         "path": "Assets/images/ship.png",
@@ -29,4 +29,3 @@ def load_assets():
             "hitbox_offset": config["hitbox_offset"],  # store relative values
         }
     return assets
-
