@@ -1,7 +1,7 @@
 import pygame as pg
 import sys
-import Main.settings as S
-from Main.constants import load_assets
+from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
+from constants import load_assets
 
 # Default positions configuration
 DEFAULT_POSITIONS = {
@@ -16,7 +16,7 @@ class Exterior:
         pg.display.set_caption("S.P.D.S")
 
         # Screen setup
-        self.screen = pg.display.set_mode((S.SCREEN_WIDTH, S.SCREEN_HEIGHT))
+        self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pg.time.Clock()
 
         # Load assets
@@ -58,7 +58,7 @@ class Exterior:
     def run(self):
         """Run the exterior scene loop."""
         while True:
-            self.clock.tick(S.FPS)
+            self.clock.tick(FPS)
             self.render()
             self.handle_events()
 

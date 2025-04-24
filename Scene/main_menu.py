@@ -1,6 +1,6 @@
 import pygame as pg
 import sys
-import Main.settings as S
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 
 class MainMenu:
     def __init__(self):
@@ -10,7 +10,7 @@ class MainMenu:
         self.BLACK = (0, 0, 0)
         self.GRAY = (200, 200, 200)
 
-        self.screen = pg.display.set_mode((S.SCREEN_WIDTH, S.SCREEN_HEIGHT))
+        self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pg.display.set_caption("Main Menu")
 
   
@@ -19,8 +19,8 @@ class MainMenu:
       
         self.button_width = 200
         self.button_height = 80
-        self.button_x = (S.SCREEN_WIDTH - self.button_width) // 2
-        self.button_y = (S.SCREEN_HEIGHT - self.button_height) // 2
+        self.button_x = (SCREEN_WIDTH - self.button_width) // 2
+        self.button_y = (SCREEN_HEIGHT - self.button_height) // 2
 
     def draw_button(self):
         pg.draw.rect(self.screen, self.GRAY, (self.button_x, self.button_y, self.button_width, self.button_height))
