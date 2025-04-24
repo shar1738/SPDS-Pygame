@@ -9,7 +9,6 @@ DEFAULT_POSITIONS = {
     "aster1": (500, 0),
 }
 
-
 class Exterior:
     def __init__(self):
         pg.init()
@@ -54,6 +53,7 @@ class Exterior:
             if event.type == pg.QUIT:
                 pg.quit()
                 sys.exit()
+                    
 
     def run(self):
         """Run the exterior scene loop."""

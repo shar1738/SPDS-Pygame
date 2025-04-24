@@ -1,7 +1,6 @@
 import pygame as pg
 import settings as S
-from Scene.main_menu import MainMenu
-from Scene.exterior_scene import Exterior
+from scene_manager import SCENES
 
 
 class Main:
@@ -14,10 +13,10 @@ class Main:
         self.clock = pg.time.Clock()
 
     def run(self):
-        menu = MainMenu()  
+        menu = SCENES["MainMenu"]()
         menu.run() 
 
-        exterior = Exterior()
+        exterior = SCENES["Exterior"]()
         exterior.run()
 
 
