@@ -14,9 +14,10 @@ ASSET_CONFIG = {
     "ship": {
         "path": "Assets/images/ship.png",
         "size": (256, 256),
-        "hitbox_offset": (64, 64, 128, 128),
+        "hitbox_offset": (0, 0, 128, 128),
     },
 }
+
 
 def load_assets():
     assets = {}

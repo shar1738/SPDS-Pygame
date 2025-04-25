@@ -18,7 +18,7 @@ class Main:
 
         exterior = SCENES["Exterior"]()
         exterior.run()
-
+    
 
 if __name__ == "__main__":
     Main().run()

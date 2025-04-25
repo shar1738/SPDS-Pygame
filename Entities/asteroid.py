@@ -1,4 +1,5 @@
 import pygame as pg 
+from constants import load_assets
 from settings import S
 
 class Asteroid:
@@ -6,6 +7,7 @@ class Asteroid:
         self.image = image
         self.rect = self.image.get_rect(topleft=(start_x, start_y))
         self.speed = speed
+        self.asset = load_assets()
 
     def update(self):
         self.rect.x -= self.speed
