@@ -14,15 +14,21 @@ ASSET_CONFIG = {
     
 }
 
+def load_assets(asset_config_dic):
+    assets = {}  # Initialize a dictionary to store processed assets
 
-def load_assets(asset_config):
-    assets = {}
-    for name, config in asset_config.items():
+    for name, config in asset_config_dic.items():  # Iterate through each asset's configuration
+        
+        # Load the image from the specified path and enable transparency
         image = pg.image.load(config["path"]).convert_alpha()
+        
+        # Scale the image to the size defined in the configuration
         image_scaled = pg.transform.scale(image, config["size"])
 
+        # Store the processed image and metadata (like hitbox offset) in the assets dictionary
         assets[name] = {
-            "image": image_scaled,
-            "hitbox_offset": config["hitbox_offset"],  # store relative values
+            "image": image_scaled,  # The resized image
+            "hitbox_offset": config["hitbox_offset"],  # Metadata for collision detection
         }
-    return assets
+    return assets  # Return the dictionary containing all loaded and processed assets
+
