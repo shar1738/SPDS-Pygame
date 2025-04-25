@@ -11,17 +11,13 @@ ASSET_CONFIG = {
         "size": (128, 128),
         "hitbox_offset": (32, 32, 64, 64),
     },
-    "ship": {
-        "path": "Assets/images/ship.png",
-        "size": (256, 256),
-        "hitbox_offset": (0, 0, 128, 128),
-    },
+    
 }
 
 
-def load_assets():
+def load_assets(asset_config):
     assets = {}
-    for name, config in ASSET_CONFIG.items():
+    for name, config in asset_config.items():
         image = pg.image.load(config["path"]).convert_alpha()
         image_scaled = pg.transform.scale(image, config["size"])
 

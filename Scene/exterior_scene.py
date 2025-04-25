@@ -1,11 +1,11 @@
 import pygame as pg
 import sys
 from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
-from constants import load_assets
+from functions import load_assets, ASSET_CONFIG
 from Entities.ship import Ship 
 
+
 DEFAULT_POSITIONS = {
-    "ship": (100, 0),
     "aster1": (500, 0),
 }
 
@@ -17,10 +17,10 @@ class Exterior:
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pg.time.Clock()
 
-        self.assets = load_assets()
+        self.assets = load_assets(ASSET_CONFIG)
         self.aster1 = self.assets["aster1"]
 
-        self.player_ship = Ship(100, 300) 
+        self.player_ship = Ship(150, 300) 
     
 
     def render(self):
