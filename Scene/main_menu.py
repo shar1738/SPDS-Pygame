@@ -1,6 +1,5 @@
 import pygame as pg
 import sys
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 
 # Configuration for UI assets
 UI_CONFIG = {
@@ -11,40 +10,73 @@ UI_CONFIG = {
 }
 
 class MainMenu:
+    SPACING = 20  # spacing between buttons
+    UI_AREA_RATIO = 9 / 10  # UI takes up one-third of the window
+
     def __init__(self):
         pg.init()
-        self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        # Detect system display resolution
+        info = pg.display.Info()
+        self.screen_width, self.screen_height = info.current_w, info.current_h
+
+        # Create a resizable window at full display size
+        self.screen = pg.display.set_mode(
+            (self.screen_width, self.screen_height), pg.RESIZABLE
+        )
         pg.display.set_caption("Main Menu")
 
-        # Load background
-        self.background = pg.image.load("Assets/images/background.png").convert()
-
-        # Load button images and create rects for hit detection
-        self.buttons = {}
-        spacing = 20  # spacing between buttons
-        total_height = 0
-        images = {}
-        # First, load all images to calculate total height
-        for key, path in UI_CONFIG["buttons"].items():
+        # Load original background and button images
+        self.bg_image_orig = pg.image.load("Assets/images/background.png").convert()
+        self.button_images_orig = {}
+        for name, path in UI_CONFIG["buttons"].items():
             img = pg.image.load(path).convert_alpha()
-            images[key] = img
-            total_height += img.get_height()
-        # Add spacing between buttons
-        total_height += spacing * (len(images) - 1)
+            self.button_images_orig[name] = img
 
-        # Starting y to vertically center all buttons
-        current_y = (SCREEN_HEIGHT - total_height) // 2
+        # Initial layout
+        self.update_layout()
 
-        # Create rects for each button, centered horizontally
-        for name, img in images.items():
-            rect = img.get_rect(center=(SCREEN_WIDTH // 2, current_y + img.get_height() // 2))
+    def update_layout(self):
+        # Scale background to current window size
+        self.background = pg.transform.scale(
+            self.bg_image_orig, (self.screen_width, self.screen_height)
+        )
+
+        # Define UI container area (centered)
+        ui_width = self.screen_width * self.UI_AREA_RATIO
+        ui_height = self.screen_height * self.UI_AREA_RATIO
+        container_x = (self.screen_width - ui_width) // 2
+        container_y = (self.screen_height - ui_height) // 2
+
+        # Prepare scaled button images to fit within UI container
+        n_buttons = len(self.button_images_orig)
+        available_height = ui_height - self.SPACING * (n_buttons - 1)
+        max_button_height = available_height / n_buttons
+        max_button_width = ui_width
+
+        scaled_images = {}
+        for name, orig in self.button_images_orig.items():
+            orig_w, orig_h = orig.get_size()
+            scale_factor = min(1, max_button_width / orig_w, max_button_height / orig_h)
+            new_size = (int(orig_w * scale_factor), int(orig_h * scale_factor))
+            img = pg.transform.scale(orig, new_size)
+            scaled_images[name] = img
+
+        # Position buttons evenly within the container
+        current_y = container_y
+        self.buttons = {}
+        for name, img in scaled_images.items():
+            rect = img.get_rect(
+                center=(
+                    self.screen_width // 2,
+                    int(current_y + img.get_height() // 2)
+                )
+            )
             self.buttons[name] = {'image': img, 'rect': rect}
-            current_y += img.get_height() + spacing
+            current_y += img.get_height() + self.SPACING
 
     def draw(self):
-        # Draw background
+        # Draw background then buttons
         self.screen.blit(self.background, (0, 0))
-        # Draw each button
         for btn in self.buttons.values():
             self.screen.blit(btn['image'], btn['rect'].topleft)
 
@@ -54,14 +86,20 @@ class MainMenu:
                 if event.type == pg.QUIT:
                     pg.quit()
                     sys.exit()
+                elif event.type == pg.VIDEORESIZE:
+                    # Update window size and re-layout
+                    self.screen_width, self.screen_height = event.w, event.h
+                    self.screen = pg.display.set_mode(
+                        (self.screen_width, self.screen_height), pg.RESIZABLE
+                    )
+                    self.update_layout()
                 elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
                     mouse_pos = event.pos
-                    # Check each button for click
                     for name, btn in self.buttons.items():
                         if btn['rect'].collidepoint(mouse_pos):
                             print(f"{name.capitalize()} button clicked!")
-                            return name  # return the identifier of clicked button
-            # Draw UI
+                            return name
+
             self.draw()
             pg.display.flip()
 
