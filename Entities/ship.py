@@ -17,8 +17,8 @@ BASIC_ANIMATION = {
         "Assets/images/ship/fire_medium.png",
         "Assets/images/ship/fire_large.png",
     ],
-    "size": (128, 128),  # original size; will be scaled up
-    "speed": 0.1,
+    "size": (100, 100),  # original size; will be scaled up
+    "speed": 0.2,
 }
 
 # Animation dictionary for the ship's appearance when boosting.
@@ -27,8 +27,8 @@ BOOST_ANIMATION = {
         "Assets/images/ship/hyper_plasma.png",
         "Assets/images/ship/hyper_plasma_extreme.png",
     ],
-    "size": (128, 128),
-    "speed": 0.1,
+    "size": (100, 100),
+    "speed": 2.5,
 }
 
 class Ship:
@@ -54,9 +54,9 @@ class Ship:
         
     def update(self, keys):
         # Rotate the ship.
-        if keys[pg.K_LEFT]:
-            self.angle = (self.angle + ROTATION_SPEED) % 360
         if keys[pg.K_RIGHT]:
+            self.angle = (self.angle + ROTATION_SPEED) % 360
+        if keys[pg.K_LEFT]:
             self.angle = (self.angle - ROTATION_SPEED) % 360
 
         # Apply thrust forward/backward.
