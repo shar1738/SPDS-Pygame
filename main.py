@@ -18,6 +18,9 @@ class Main:
 
         exterior = SCENES["Exterior"]()
         exterior.run()
+
+        #interior = SCENES["Interior"]()
+        #inerior.run
     
 
 if __name__ == "__main__":
