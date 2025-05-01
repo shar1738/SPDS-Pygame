@@ -5,7 +5,11 @@ import time
 from data import EXT_UI_ELEMENTS
 from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
 from Entities.ship import Ship
-from Entities.asteroids import Asteroids  # Your asteroid module
+from Entities.asteroids import Asteroids, IS_INV  
+
+DISTANCE_RATE = 5
+DISTANCE = 0
+DISTANCE_MAX = (1000, 5000)
 
 
 def load_scaled_image(path, size):
@@ -25,6 +29,7 @@ class Exterior:
         self.player_ship = Ship(150, 300)
         self.asteroids = Asteroids()
         self.asteroids.spawn_rand(5)
+        self.is_inv = IS_INV
 
         # Load and scale UI images
         self.health_info = EXT_UI_ELEMENTS["health"]
@@ -64,7 +69,7 @@ class Exterior:
     def update_ui(self):
         max_health = 150
         step = 25
-        index = min(len(self.health_info["paths"]) - 1, (max_health - self.player_ship.health) // step)
+        index = min(len(self.health_info["paths"]) - 1, (max_health - self.player_health) // step)
         self.ui_health_img = load_scaled_image(self.health_info["paths"][index], self.health_info["size"])
 
         # Nitro boost status
@@ -108,6 +113,7 @@ class Exterior:
             self.player_ship.update(keys)
             self.asteroids.update(dt)
 
+            self.player_health = self.asteroids.ship_health
             self.update_ui()
 
             self.screen.blit(self.background, (0, 0))

@@ -4,6 +4,8 @@ import sys
 from functions import Animation
 import settings as S
 
+IS_INV = False
+
 # Configuration for asteroid assets
 ASSET_CONFIG = {
     f"asteroid{i}": {
@@ -27,8 +29,11 @@ class Asteroids:
 
         self.asteroid_list  = []
         self.spawn_timer    = 0      # ms until next spawn
-        self.spawn_interval = 200    # spawn every 200 ms
-
+        self.spawn_interval = 200
+        self.is_inv = IS_INV
+        self.inv_timer = 0
+        self.ship_health = 150
+            
     def calc_right(self):
         return S.SCREEN_WIDTH + 50
 
@@ -67,6 +72,9 @@ class Asteroids:
             self.spawn_timer += self.spawn_interval
             self.spawn_rand(1)
 
+    def take_damage(self, damage_amount):
+        self.ship_health -= damage_amount
+
     def update_and_draw(self, screen, ship):
         """
         Move asteroids, test collisions with `ship`, draw them,
@@ -75,6 +83,12 @@ class Asteroids:
         # If display is closed, do nothing
         if pg.display.get_surface() is None:
             return
+        
+        # Decrease invulnerability timer
+        if self.is_inv:
+            self.inv_timer -= 1
+            if self.inv_timer <= 0:
+                self.is_inv = False
 
         to_remove = []
 
@@ -92,10 +106,15 @@ class Asteroids:
             )
 
             if ship.mask.overlap(asteroid_mask, offset):
-                ship.take_damage(25)
+                if not self.is_inv:
+                    self.take_damage(25)
+                    print('damage taken')
+                    self.is_inv = True
+                    self.inv_timer = 120  # Set invulnerability duration (e.g., 60 frames)
+
 
                 # Game over if health depleted
-                if ship.health <= 0:
+                if self.ship_health <= 0:
                     # Load and blit game over image at center
                     game_over_img = pg.image.load(
                         "Assets/images/ui/game_over.png"

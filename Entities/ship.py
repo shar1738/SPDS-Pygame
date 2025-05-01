@@ -1,17 +1,13 @@
 import pygame as pg
 import time
-from functions import Animation
-
+from functions import Animation 
 # Constants
 THRUST_POWER       = 0.3
 FRICTION           = 0.97
 ROTATION_SPEED     = 3
 MAX_ANGLE          = 60  # degrees up and down
 
-
 SCALE_FACTOR       = 2
-
-HEALTH             = 150
 
 BASIC_ANIMATION = {
     "paths": [
@@ -52,10 +48,6 @@ class Ship:
         self.angle           = 0
         self.is_boosting     = False
 
-        # Ship stats
-        self.health          = HEALTH
-
-        # Load and scale animations
         basic_size = (
             BASIC_ANIMATION["size"][0] * SCALE_FACTOR,
             BASIC_ANIMATION["size"][1] * SCALE_FACTOR
@@ -146,13 +138,7 @@ class Ship:
         self.mask    = pg.mask.from_surface(rotated)
 
         surface.blit(self.image, self.rect.topleft)
-
-    def take_damage(self, amount: int):
-        # Shield absorbs first, then health
-        if self.health < 0:
-            print('you dead')
-        else:
-            self.health -= amount
+            
 
     def get_mask(self):
         return self.mask
