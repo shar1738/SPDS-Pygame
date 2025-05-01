@@ -11,7 +11,7 @@ UI_CONFIG = {
 
 class MainMenu:
     SPACING = 20  # spacing between buttons
-    UI_AREA_RATIO = 9 / 10  # UI takes up one-third of the window
+    UI_AREA_RATIO = 9.5 / 10  # UI takes up one-third of the window
 
     def __init__(self):
         pg.init()

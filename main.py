@@ -3,6 +3,7 @@ import settings as S
 from scene_manager import SCENES
 
 
+
 class Main:
     def __init__(self):
         pg.init()
