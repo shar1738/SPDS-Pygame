@@ -12,6 +12,10 @@ DISTANCE = 0
 DISTANCE_MAX = (100, 110)
 PIZZA_SPEED = 200
 
+SAVED_STATS = {
+
+}
+
 
 def load_scaled_image(path, size):
     return pg.transform.scale(pg.image.load(path).convert_alpha(), size)
@@ -22,6 +26,8 @@ class Exterior:
         pg.init()
         pg.display.set_caption("S.P.D.S")
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.interior_running = False
+        self.exterior_running = True
 
         self.background = pg.image.load("Assets/images/background.png").convert()
         self.background = pg.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -162,6 +168,12 @@ class Exterior:
                     sys.exit()
 
             keys = pg.key.get_pressed()
+
+            '''if keys[pg.K_ESCAPE]:
+                interior_running = True
+                #save the distance, time, and health in a dictionary 
+                #load interior scene'''
+
             self.player_ship.update(keys, dt)
 
 
