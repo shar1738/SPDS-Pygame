@@ -1,6 +1,8 @@
 import pygame as pg
 import time
-from functions import Animation 
+from functions import Animation
+from data import IS_DAMAGED
+
 # Constants
 THRUST_POWER       = 0.3
 FRICTION           = 0.97
@@ -38,6 +40,15 @@ BOOST_ANIMATION = {
     "speed": 0.5,
 }
 
+DAMAGE_ANIMATION = {
+    "paths": [
+        "Assets/images/ship/ship_damage.png"
+    ],
+    "size": (100, 100),
+    "speed": 0.01,
+}
+
+
 class Ship:
     def __init__(self, x, y):
         pg.init()
@@ -47,12 +58,26 @@ class Ship:
         self.vel             = pg.Vector2(0, 0)
         self.angle           = 0
         self.is_boosting     = False
+        self.is_damaged      = IS_DAMAGED
+        self.damage_timer    = 0
 
+        # Custom hitbox size
+        self.hitbox_length   = 40  # width
+        self.hitbox_height   = 60  # height
+
+        # Ship stats
+        self.health = 150
+
+        # Load and scale animations
         basic_size = (
             BASIC_ANIMATION["size"][0] * SCALE_FACTOR,
             BASIC_ANIMATION["size"][1] * SCALE_FACTOR
         )
         boost_size = (
+            BOOST_ANIMATION["size"][0] * SCALE_FACTOR,
+            BOOST_ANIMATION["size"][1] * SCALE_FACTOR
+        )
+        damage_size = (
             BOOST_ANIMATION["size"][0] * SCALE_FACTOR,
             BOOST_ANIMATION["size"][1] * SCALE_FACTOR
         )
@@ -62,56 +87,58 @@ class Ship:
             speed = BASIC_ANIMATION["speed"],
             size  = basic_size
         )
-
         self.boost_anim = Animation(
             BOOST_ANIMATION["paths"],
             speed = BOOST_ANIMATION["speed"],
             size  = boost_size
         )
+        self.damage_anim = Animation(
+            DAMAGE_ANIMATION["paths"],
+            speed = DAMAGE_ANIMATION["speed"],
+            size  = damage_size
+        )
 
-        # Initial frame setup
-        frame      = self.basic_anim.get_current_frame()
-        self.image = frame
-        self.rect  = frame.get_rect(center = self.pos)
-        self.mask  = pg.mask.from_surface(frame)
+        self.image = self.basic_anim.get_current_frame()
+        self.rect  = self.image.get_rect(center = self.pos)
 
         # Boost timers
-        self.boost_start_time = 0  # Time when boost started
-        self.boost_duration = 5  # Boost lasts 5 seconds
-        self.boost_cooldown_time = 0  # Time when cooldown started
-        self.boost_cooldown_duration = 5  # 5 second cooldown after boost
+        self.boost_start_time = 0  
+        self.boost_duration = 5  
+        self.boost_cooldown_time = 0  
+        self.boost_cooldown_duration = 5  
 
-    def update(self, keys):
+    def update(self, keys, dt):
         # Rotation
         if keys[pg.K_LEFT]:
             self.angle -= ROTATION_SPEED
         if keys[pg.K_RIGHT]:
             self.angle += ROTATION_SPEED
-
         self.angle = max(-MAX_ANGLE, min(MAX_ANGLE, self.angle))
 
         # Thrust
         if keys[pg.K_UP]:
-            forward   = pg.Vector2(0, -1).rotate(self.angle)
+            forward = pg.Vector2(0, -1).rotate(self.angle)
             self.vel += forward * THRUST_POWER
         if keys[pg.K_DOWN]:
-            backward  = pg.Vector2(0, 1).rotate(self.angle)
+            backward = pg.Vector2(0, 1).rotate(self.angle)
             self.vel += backward * (THRUST_POWER * 0.5)
 
         # Boost detection
         current_time = time.time()
-
-        # Check if boost can be activated (not in cooldown)
         if keys[pg.K_SPACE]:
-            if self.is_boosting == False and (current_time - self.boost_cooldown_time) > self.boost_cooldown_duration:
+            if not self.is_boosting and (current_time - self.boost_cooldown_time) > self.boost_cooldown_duration:
                 self.is_boosting = True
-                self.boost_start_time = current_time  # Start boost timer
+                self.boost_start_time = current_time
 
-        # Boost duration and cooldown logic
         if self.is_boosting:
             if current_time - self.boost_start_time > self.boost_duration:
                 self.is_boosting = False
-                self.boost_cooldown_time = current_time  # Start cooldown after boost ends
+                self.boost_cooldown_time = current_time
+        
+        if self.is_damaged:
+            self.damage_timer -= dt
+            if self.damage_timer <= 0:
+                self.is_damaged = False
 
         # Move and apply friction
         self.vel *= FRICTION
@@ -123,22 +150,46 @@ class Ship:
         self.pos.y = max(0, min(h, self.pos.y))
 
     def draw(self, surface):
-        # Select animation frame
-        if self.is_boosting:
+        # Update animation frame
+        if self.is_damaged:
+            self.damage_anim.update()
+            frame = self.damage_anim.get_current_frame()
+        elif self.is_boosting:
             self.boost_anim.update()
             frame = self.boost_anim.get_current_frame()
         else:
             self.basic_anim.update()
             frame = self.basic_anim.get_current_frame()
+        
+        # Rotate ship image
+        rotated = pg.transform.rotozoom(frame, -self.angle, 1)
+        self.image = rotated
+        self.rect = rotated.get_rect(center=self.pos)
 
-        # Rotate and render ship
-        rotated      = pg.transform.rotozoom(frame, -self.angle, 1)
-        self.image   = rotated
-        self.rect    = rotated.get_rect(center = self.pos)
-        self.mask    = pg.mask.from_surface(rotated)
+        # Create rectangular hitbox surface
+        hitbox_surface = pg.Surface((self.hitbox_length, self.hitbox_height), pg.SRCALPHA)
+        pg.draw.rect(hitbox_surface, (255, 255, 255), (0, 0, self.hitbox_length, self.hitbox_height))
 
+        # Apply same rotation to hitbox
+        rotated_hitbox = pg.transform.rotozoom(hitbox_surface, -self.angle, 1)
+
+        # Compute rotated offset vector for hitbox position
+        offset_x = 200  # distance forward from ship center
+        offset_vector = pg.Vector2(offset_x, 0).rotate(-self.angle)
+
+        # Store rotated mask and rect at correct hitbox position
+        self.mask = pg.mask.from_surface(self.image)
+        self.mask_rect = rotated_hitbox.get_rect(center=(self.pos + offset_vector))
+
+        # Draw ship
         surface.blit(self.image, self.rect.topleft)
-            
+
+
+    def take_damage(self, amount: int):
+        if self.health < 0:
+            print('you dead')
+        else:
+            self.health -= amount
 
     def get_mask(self):
-        return self.mask
+        return self.mask, self.mask_rect.topleft

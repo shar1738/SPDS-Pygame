@@ -26,5 +26,11 @@ EXT_UI_ELEMENTS = {
     "costumer_label": {
         "paths": ["Assets/images/ui/costumer_label.png"],
         "size": (128, 128)
+    },
+    "esc_ship": {
+        "paths": ["Assets/images/ship/escape_interior.png"],
+        "size": (200, 200)
     }
 }
+
+IS_DAMAGED = False

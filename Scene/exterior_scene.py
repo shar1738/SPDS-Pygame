@@ -9,7 +9,7 @@ from Entities.asteroids import Asteroids, IS_INV
 
 DISTANCE_RATE = 5
 DISTANCE = 0
-DISTANCE_MAX = (25, 100)
+DISTANCE_MAX = (100, 110)
 PIZZA_SPEED = 200
 
 
@@ -35,13 +35,11 @@ class Exterior:
         self.spawn_aster = True
 
         self.delivered_img  = pg.image.load("Assets/images/ui/garage_(delivered).png").convert_alpha()
-        
         self.delivered_rect = self.delivered_img.get_rect(
             topright=(SCREEN_WIDTH + 1500, 0)
         )
         self.show_delivery = False
         
-
         self.raw_pizza = pg.image.load("Assets/images/pizza_box.png").convert_alpha()
         self.pizza_img = pg.transform.scale(self.raw_pizza, (128, 128))
 
@@ -56,11 +54,14 @@ class Exterior:
         self.costumer_info = EXT_UI_ELEMENTS["costumers"]
         self.costumer_lbl_info = EXT_UI_ELEMENTS["costumer_label"]
         self.pizza_timer_info = EXT_UI_ELEMENTS["pizza_timer"]
+        self.esc_info = EXT_UI_ELEMENTS["esc_ship"]
         self.font = pg.font.SysFont(None, 30) 
 
         self.ui_health_img = load_scaled_image(self.health_info["paths"][0], self.health_info["size"])
         self.ui_nitro_img = load_scaled_image(self.nitro_info["paths"][0], self.nitro_info["size"])
         self.costumer_lbl_img = load_scaled_image(self.costumer_lbl_info["paths"][0], self.costumer_lbl_info["size"])
+        self.esc_ship_img = load_scaled_image(self.esc_info["paths"][0], self.esc_info["size"])
+        self.ui_costumer_img = load_scaled_image(self.costumer_info["paths"][random.randint(0, len(self.costumer_info["paths"]) - 1)],self.nitro_info["size"])
 
         # Preload pizza timer frames
         self.pizza_timer_frames = [
@@ -72,17 +73,13 @@ class Exterior:
         self.pizza_timer_start = time.time()
         self.pizza_timer_rect = self.pizza_timer_frames[0].get_rect(topright=(SCREEN_WIDTH - 150, 0))
 
-        # Load random customer image and scale it
-        self.ui_costumer_img = load_scaled_image(
-            self.costumer_info["paths"][random.randint(0, len(self.costumer_info["paths"]) - 1)],
-            self.nitro_info["size"]
-        )
 
         # Position customer at the top-right corner
         self.ui_costumer_rect = self.ui_costumer_img.get_rect(topright=(SCREEN_WIDTH, 0))
         self.costumer_lbl_rect = self.costumer_lbl_img.get_rect(topright=(SCREEN_WIDTH, 100))
+        self.esc_ship_rect = self.esc_ship_img.get_rect(bottomright=(SCREEN_WIDTH - 10, SCREEN_HEIGHT - 10))
 
-        # Position health bottom-left and nitro just to the right
+
         self.ui_health_rect = self.ui_health_img.get_rect(bottomleft=(10, SCREEN_HEIGHT - 10))
         self.ui_nitro_rect = self.ui_nitro_img.get_rect(bottomleft=(self.ui_health_rect.right + 10, SCREEN_HEIGHT - 50))
 
@@ -129,19 +126,19 @@ class Exterior:
                 elif time.time() - self.run_out_time > 1.0:
                     if not hasattr(self, "has_game_ended"):
                         self.has_game_ended = True
-                        self.game_over()
+                        self.game_over("Assets/images/ui/cold_lose.png")
             else:
                 if hasattr(self, "run_out_time"):
                     del self.run_out_time
 
 
 
-    def game_over(self):
-        game_over_img = pg.image.load("Assets/images/ui/game_over.png").convert_alpha()
+    def game_over(self, path):
+        game_over_img = pg.image.load(path).convert_alpha()
         rect = game_over_img.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(game_over_img, rect.topleft)
         pg.display.flip()
-        pg.time.delay(2000)
+        pg.time.delay(3000)
         pg.quit()
         sys.exit()
     
@@ -151,6 +148,7 @@ class Exterior:
         self.screen.blit(garage_img, rect.topleft)
         pg.display.flip()
 
+   
     def run(self):
         while True:
             # dt in milliseconds
@@ -163,9 +161,9 @@ class Exterior:
                     pg.quit()
                     sys.exit()
 
-            # update ship & asteroids
             keys = pg.key.get_pressed()
-            self.player_ship.update(keys)
+            self.player_ship.update(keys, dt)
+
 
             if self.spawn_aster == False:
                 self.asteroids.update(dt_ms) == False
@@ -173,9 +171,9 @@ class Exterior:
                 self.asteroids.update(dt_ms)
 
             # health check
-            self.player_health = self.asteroids.ship_health
+            self.player_health = self.player_ship.health
             if self.player_health <= 0:
-                self.game_over()
+                self.game_over("Assets/images/ui/game_over.png")
 
             # --- distance countdown ---
             # base rate per second, doubled when boosting
@@ -201,6 +199,7 @@ class Exterior:
             self.screen.blit(self.ui_costumer_img, self.ui_costumer_rect)
             self.screen.blit(self.costumer_lbl_img, self.costumer_lbl_rect)
             self.screen.blit(self.current_pizza_timer_img, self.pizza_timer_rect)
+            self.screen.blit(self.esc_ship_img, self.esc_ship_rect)
 
              # — draw distance text in top-left —
             dist_text = f"Distance to customer: {int(self.distance)}"
@@ -254,6 +253,9 @@ class Exterior:
                         # Snap to target when close
                         self.pizza_rect.center = self.target_xy
                         self.pizza_rot_speed = 0
+
+                    if self.pizza_rect.center == self.target_xy:
+                        self.game_over("Assets/images/ui/win_ui.png")
 
                     # Spin the pizza
                     self.pizza_angle = (self.pizza_angle + self.pizza_rot_speed * dt) % 360

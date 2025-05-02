@@ -1,8 +1,8 @@
 import pygame as pg
 import random
-import sys
 from functions import Animation
 import settings as S
+
 
 IS_INV = False
 
@@ -32,7 +32,6 @@ class Asteroids:
         self.spawn_interval = 150
         self.is_inv = IS_INV
         self.inv_timer = 0
-        self.ship_health = 150
         self.can_spawn = True
         
             
@@ -75,18 +74,15 @@ class Asteroids:
             self.spawn_timer += self.spawn_interval
             self.spawn_rand(1)
 
-    def take_damage(self, damage_amount):
-        self.ship_health -= damage_amount
 
     def update_and_draw(self, screen, ship):
         """
         Move asteroids, test collisions with `ship`, draw them,
         handle game over, and remove any that collided or went off-screen.
         """
-        # If display is closed, do nothing
         if pg.display.get_surface() is None:
             return
-        
+
         # Decrease invulnerability timer
         if self.is_inv:
             self.inv_timer -= 1
@@ -100,36 +96,37 @@ class Asteroids:
             speed_factor = 1.5 if getattr(ship, 'is_boosting', False) else 1.0
             a["pos"][0] -= a["speed"] * speed_factor
 
-            # Collision test
-            ast_box       = self.calculate_hitbox(a["pos"], a["hitbox_offset"])
+            # Collision detection using pixel-perfect masks
             asteroid_mask = pg.mask.from_surface(a["image"])
-            offset        = (
-                ast_box.left - ship.rect.left,
-                ast_box.top  - ship.rect.top
+            asteroid_rect = a["image"].get_rect(topleft=(int(a["pos"][0]), int(a["pos"][1])))
+
+            # Compute the offset between the ship and asteroid for mask overlap
+            offset = (
+                asteroid_rect.left - ship.rect.left,
+                asteroid_rect.top - ship.rect.top
             )
 
             if ship.mask.overlap(asteroid_mask, offset):
                 if not self.is_inv:
-                    self.take_damage(25)
-                    print('damage taken')
+                    ship.take_damage(25)
+                    ship.is_damaged = True
+                    ship.damage_timer = 0.5
+
                     self.is_inv = True
-                    self.inv_timer = 120  # Set invulnerability duration (e.g., 60 frames)
+                    self.inv_timer = 120  # e.g., 2 seconds at 60 FPS
 
                 to_remove.append(a)
                 continue
 
             # Off-screen cleanup
-            if ast_box.right < 0:
+            if asteroid_rect.right < 0:
                 to_remove.append(a)
                 continue
 
             # Draw asteroid
-            screen.blit(
-                a["image"],
-                (int(a["pos"][0]), int(a["pos"][1]))
-            )
+            screen.blit(a["image"], (int(a["pos"][0]), int(a["pos"][1])))
 
-        # Remove collided/off-screen asteroids
+        # Cleanup
         for a in to_remove:
             if a in self.asteroid_list:
                 self.asteroid_list.remove(a)
