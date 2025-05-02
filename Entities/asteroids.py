@@ -29,10 +29,12 @@ class Asteroids:
 
         self.asteroid_list  = []
         self.spawn_timer    = 0      # ms until next spawn
-        self.spawn_interval = 200
+        self.spawn_interval = 150
         self.is_inv = IS_INV
         self.inv_timer = 0
         self.ship_health = 150
+        self.can_spawn = True
+        
             
     def calc_right(self):
         return S.SCREEN_WIDTH + 50
@@ -54,6 +56,7 @@ class Asteroids:
                 "hitbox_offset": offset,
             })
 
+
     def calculate_hitbox(self, pos, offset):
         ox, oy, w, h = offset
         return pg.Rect(
@@ -68,7 +71,7 @@ class Asteroids:
         Advance spawn timer and generate new asteroids as needed.
         """
         self.spawn_timer -= dt
-        if self.spawn_timer <= 0:
+        if self.spawn_timer <= 0 and self.can_spawn == True:
             self.spawn_timer += self.spawn_interval
             self.spawn_rand(1)
 
@@ -111,22 +114,6 @@ class Asteroids:
                     print('damage taken')
                     self.is_inv = True
                     self.inv_timer = 120  # Set invulnerability duration (e.g., 60 frames)
-
-
-                # Game over if health depleted
-                if self.ship_health <= 0:
-                    # Load and blit game over image at center
-                    game_over_img = pg.image.load(
-                        "Assets/images/ui/game_over.png"
-                    ).convert_alpha()
-                    rect = game_over_img.get_rect(
-                        center=(S.SCREEN_WIDTH // 2, S.SCREEN_HEIGHT // 2)
-                    )
-                    screen.blit(game_over_img, rect.topleft)
-                    pg.display.flip()
-                    pg.time.delay(2000)
-                    pg.quit()
-                    sys.exit()
 
                 to_remove.append(a)
                 continue

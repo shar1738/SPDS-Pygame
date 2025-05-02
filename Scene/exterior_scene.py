@@ -9,7 +9,8 @@ from Entities.asteroids import Asteroids, IS_INV
 
 DISTANCE_RATE = 5
 DISTANCE = 0
-DISTANCE_MAX = (1000, 5000)
+DISTANCE_MAX = (25, 100)
+PIZZA_SPEED = 200
 
 
 def load_scaled_image(path, size):
@@ -25,11 +26,29 @@ class Exterior:
         self.background = pg.image.load("Assets/images/background.png").convert()
         self.background = pg.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pg.time.Clock()
+        self.distance = random.randint(DISTANCE_MAX[0], DISTANCE_MAX[1])
 
         self.player_ship = Ship(150, 300)
         self.asteroids = Asteroids()
         self.asteroids.spawn_rand(5)
         self.is_inv = IS_INV
+        self.spawn_aster = True
+
+        self.delivered_img  = pg.image.load("Assets/images/ui/garage_(delivered).png").convert_alpha()
+        
+        self.delivered_rect = self.delivered_img.get_rect(
+            topright=(SCREEN_WIDTH + 1500, 0)
+        )
+        self.show_delivery = False
+        
+
+        self.raw_pizza = pg.image.load("Assets/images/pizza_box.png").convert_alpha()
+        self.pizza_img = pg.transform.scale(self.raw_pizza, (128, 128))
+
+        self.pizza_angle = 0.0
+        self.pizza_rot_speed = 180.0
+        self.pizza_spawned = False    # only spawn once
+        self.pizza_rect = None     # will set later
 
         # Load and scale UI images
         self.health_info = EXT_UI_ELEMENTS["health"]
@@ -37,6 +56,7 @@ class Exterior:
         self.costumer_info = EXT_UI_ELEMENTS["costumers"]
         self.costumer_lbl_info = EXT_UI_ELEMENTS["costumer_label"]
         self.pizza_timer_info = EXT_UI_ELEMENTS["pizza_timer"]
+        self.font = pg.font.SysFont(None, 30) 
 
         self.ui_health_img = load_scaled_image(self.health_info["paths"][0], self.health_info["size"])
         self.ui_nitro_img = load_scaled_image(self.nitro_info["paths"][0], self.nitro_info["size"])
@@ -67,55 +87,111 @@ class Exterior:
         self.ui_nitro_rect = self.ui_nitro_img.get_rect(bottomleft=(self.ui_health_rect.right + 10, SCREEN_HEIGHT - 50))
 
     def update_ui(self):
+        # — health bar as before —
         max_health = 150
         step = 25
-        index = min(len(self.health_info["paths"]) - 1, (max_health - self.player_health) // step)
-        self.ui_health_img = load_scaled_image(self.health_info["paths"][index], self.health_info["size"])
+        index = min(
+            len(self.health_info["paths"]) - 1,
+            (max_health - self.player_health) // step
+        )
+        self.ui_health_img = load_scaled_image(
+            self.health_info["paths"][index],
+            self.health_info["size"]
+        )
 
-        # Nitro boost status
+        # — nitro icon as before —
         nitro_index = 1 if self.player_ship.is_boosting else 0
-        self.ui_nitro_img = load_scaled_image(self.nitro_info["paths"][nitro_index], self.nitro_info["size"])
+        self.ui_nitro_img = load_scaled_image(
+            self.nitro_info["paths"][nitro_index],
+            self.nitro_info["size"]
+        )
 
-        # Pizza timer countdown
-        elapsed = time.time() - self.pizza_timer_start
-        remaining = max(0, self.pizza_timer_total - elapsed)
+        # — only update the pizza timer if we haven’t arrived yet —
+        if self.distance > 0:
+            # Pizza timer countdown
+            elapsed   = time.time() - self.pizza_timer_start
+            remaining = max(0, self.pizza_timer_total - elapsed)
 
-        num_progress_frames = len(self.pizza_timer_frames) - 2
+            num_progress_frames = len(self.pizza_timer_frames) - 2
 
-        if remaining > 0:
-            percent_complete = 1 - (remaining / self.pizza_timer_total)
-            frame_index = int(percent_complete * num_progress_frames)
-        else:
-            frame_index = len(self.pizza_timer_frames) - 1  # Final frame: run_out.png
+            if remaining > 0:
+                percent_complete = 1 - (remaining / self.pizza_timer_total)
+                frame_index      = int(percent_complete * num_progress_frames)
+            else:
+                frame_index = len(self.pizza_timer_frames) - 1
 
-        self.current_pizza_timer_img = self.pizza_timer_frames[frame_index]
+            self.current_pizza_timer_img = self.pizza_timer_frames[frame_index]
 
-        # Only reset after fully displaying run_out.png for 1 second
-        if frame_index == len(self.pizza_timer_frames) - 1:
-            if not hasattr(self, "run_out_time"):
-                self.run_out_time = time.time()
-            elif time.time() - self.run_out_time > 1.0:
-                self.pizza_timer_total = random.randint(30, 120)
-                self.pizza_timer_start = time.time()
-                del self.run_out_time
-        elif hasattr(self, "run_out_time"):
-            del self.run_out_time
+            # run-out hold and game-over logic
+            if frame_index == len(self.pizza_timer_frames) - 1:
+                if not hasattr(self, "run_out_time"):
+                    self.run_out_time = time.time()
+                elif time.time() - self.run_out_time > 1.0:
+                    if not hasattr(self, "has_game_ended"):
+                        self.has_game_ended = True
+                        self.game_over()
+            else:
+                if hasattr(self, "run_out_time"):
+                    del self.run_out_time
+
+
+
+    def game_over(self):
+        game_over_img = pg.image.load("Assets/images/ui/game_over.png").convert_alpha()
+        rect = game_over_img.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+        self.screen.blit(game_over_img, rect.topleft)
+        pg.display.flip()
+        pg.time.delay(2000)
+        pg.quit()
+        sys.exit()
+    
+    def garage_spawn(self):
+        garage_img = pg.image.load("Assets/images/ui/garage_(delivered).png").convert_alpha()
+        rect = garage_img.get_rect(topright = (SCREEN_WIDTH - 100, SCREEN_HEIGHT))
+        self.screen.blit(garage_img, rect.topleft)
+        pg.display.flip()
 
     def run(self):
         while True:
-            dt = self.clock.tick(FPS)
+            # dt in milliseconds
+            dt_ms = self.clock.tick(FPS)
+            # convert to seconds
+            dt = dt_ms / 1000.0
+
             for e in pg.event.get():
                 if e.type == pg.QUIT:
                     pg.quit()
                     sys.exit()
 
+            # update ship & asteroids
             keys = pg.key.get_pressed()
             self.player_ship.update(keys)
-            self.asteroids.update(dt)
 
+            if self.spawn_aster == False:
+                self.asteroids.update(dt_ms) == False
+            else:
+                self.asteroids.update(dt_ms)
+
+            # health check
             self.player_health = self.asteroids.ship_health
+            if self.player_health <= 0:
+                self.game_over()
+
+            # --- distance countdown ---
+            # base rate per second, doubled when boosting
+            rate = DISTANCE_RATE * (2 if self.player_ship.is_boosting else 1)
+            # subtract distance this frame
+            self.distance = max(0, self.distance - rate * dt)
+
+            if self.distance <= 0:
+                self.asteroids.can_spawn = False
+                if not self.show_delivery:
+                    self.show_delivery = True
+
+            # update UI (timer, health bar, etc.)
             self.update_ui()
 
+            # draw everything
             self.screen.blit(self.background, (0, 0))
             self.player_ship.draw(self.screen)
             self.asteroids.update_and_draw(self.screen, self.player_ship)
@@ -126,7 +202,72 @@ class Exterior:
             self.screen.blit(self.costumer_lbl_img, self.costumer_lbl_rect)
             self.screen.blit(self.current_pizza_timer_img, self.pizza_timer_rect)
 
+             # — draw distance text in top-left —
+            dist_text = f"Distance to customer: {int(self.distance)}"
+            text_surf = self.font.render(dist_text, True, (255, 255, 255))
+            self.screen.blit(text_surf, (10, 10))
+            
+            if self.player_ship.is_boosting:
+                DELIVER_SPEED * 5
+            else:
+                DELIVER_SPEED = 100 
+
+            if self.show_delivery:
+                # — 1) slide the garage into view —
+                if self.delivered_rect.right > SCREEN_WIDTH:
+                    self.delivered_rect.x -= DELIVER_SPEED * dt
+                else:
+                    # clamp exactly at the edge
+                    self.delivered_rect.right = SCREEN_WIDTH
+
+                    # — 2) once garage is fully in, spawn pizza at ship —
+                    if not self.pizza_spawned:
+                        # draw call already happened, so rect is up to date
+                        ship_center     = self.player_ship.rect.center
+                        self.pizza_rect = self.pizza_img.get_rect(center=ship_center)
+                        self.pizza_spawned = True
+
+                # blit the garage
+                self.screen.blit(self.delivered_img, self.delivered_rect)
+
+
+                if self.pizza_spawned:
+                    # Set target destination for the pizza
+                    target_x, target_y = SCREEN_WIDTH - 700, SCREEN_HEIGHT - 500
+                    self.target_xy = (target_x, target_y)
+
+                    # Get current pizza center
+                    px, py = self.pizza_rect.center
+
+                    # Calculate direction vector toward target
+                    dx = target_x - px
+                    dy = target_y - py
+                    distance = (dx**2 + dy**2) ** 0.5
+
+                    if distance > 5:
+                        # Normalize and move pizza
+                        dx /= distance
+                        dy /= distance
+                        self.pizza_rect.x += dx * PIZZA_SPEED * dt
+                        self.pizza_rect.y += dy * PIZZA_SPEED * dt
+                    else:
+                        # Snap to target when close
+                        self.pizza_rect.center = self.target_xy
+                        self.pizza_rot_speed = 0
+
+                    # Spin the pizza
+                    self.pizza_angle = (self.pizza_angle + self.pizza_rot_speed * dt) % 360
+                    rotated = pg.transform.rotozoom(self.pizza_img, self.pizza_angle, 1.0)
+                    rot_rect = rotated.get_rect(center=self.pizza_rect.center)
+                    self.screen.blit(rotated, rot_rect.topleft)
+
+
+
+
+
+
             pg.display.flip()
+
 
 
 if __name__ == "__main__":
