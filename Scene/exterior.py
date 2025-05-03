@@ -39,7 +39,10 @@ class Exterior:
         self.asteroids.spawn_rand(5)
         self.is_inv = IS_INV
         self.spawn_aster = True
+        self.hole_shown = False  # Has the hole image been triggered?
+        self.hole_start_time = None  # When did the image start showing?
 
+        #start of ui bs
         self.delivered_img  = pg.image.load("Assets/images/ui/garage_(delivered).png").convert_alpha()
         self.delivered_rect = self.delivered_img.get_rect(
             topright=(SCREEN_WIDTH + 1500, 0)
@@ -61,6 +64,7 @@ class Exterior:
         self.costumer_lbl_info = EXT_UI_ELEMENTS["costumer_label"]
         self.pizza_timer_info = EXT_UI_ELEMENTS["pizza_timer"]
         self.esc_info = EXT_UI_ELEMENTS["esc_ship"]
+        self.hole_info = EXT_UI_ELEMENTS["hole"]
         self.font = pg.font.SysFont(None, 30) 
 
         self.ui_health_img = load_scaled_image(self.health_info["paths"][0], self.health_info["size"])
@@ -68,6 +72,7 @@ class Exterior:
         self.costumer_lbl_img = load_scaled_image(self.costumer_lbl_info["paths"][0], self.costumer_lbl_info["size"])
         self.esc_ship_img = load_scaled_image(self.esc_info["paths"][0], self.esc_info["size"])
         self.ui_costumer_img = load_scaled_image(self.costumer_info["paths"][random.randint(0, len(self.costumer_info["paths"]) - 1)],self.nitro_info["size"])
+        self.hole_img = load_scaled_image(self.hole_info["paths"][0], self.hole_info["size"])
 
         # Preload pizza timer frames
         self.pizza_timer_frames = [
@@ -84,15 +89,16 @@ class Exterior:
         self.ui_costumer_rect = self.ui_costumer_img.get_rect(topright=(SCREEN_WIDTH, 0))
         self.costumer_lbl_rect = self.costumer_lbl_img.get_rect(topright=(SCREEN_WIDTH, 100))
         self.esc_ship_rect = self.esc_ship_img.get_rect(bottomright=(SCREEN_WIDTH - 10, SCREEN_HEIGHT - 10))
-
+        self.hole_rect = self.hole_img.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
 
         self.ui_health_rect = self.ui_health_img.get_rect(bottomleft=(10, SCREEN_HEIGHT - 10))
         self.ui_nitro_rect = self.ui_nitro_img.get_rect(bottomleft=(self.ui_health_rect.right + 10, SCREEN_HEIGHT - 50))
 
     def update_ui(self):
-        # — health bar as before —
+        # — health bar as before — 
         max_health = 150
         step = 25
+
         index = min(
             len(self.health_info["paths"]) - 1,
             (max_health - self.player_health) // step
@@ -137,8 +143,6 @@ class Exterior:
                 if hasattr(self, "run_out_time"):
                     del self.run_out_time
 
-
-
     def game_over(self, path):
         game_over_img = pg.image.load(path).convert_alpha()
         rect = game_over_img.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
@@ -153,13 +157,14 @@ class Exterior:
         rect = garage_img.get_rect(topright = (SCREEN_WIDTH - 100, SCREEN_HEIGHT))
         self.screen.blit(garage_img, rect.topleft)
         pg.display.flip()
+    
+    def hole_detected(self):
+        if self.hole_start_time is None:
+            self.hole_start_time = time.time()
 
-   
     def run(self):
         while True:
-            # dt in milliseconds
             dt_ms = self.clock.tick(FPS)
-            # convert to seconds
             dt = dt_ms / 1000.0
 
             for e in pg.event.get():
@@ -169,28 +174,21 @@ class Exterior:
 
             keys = pg.key.get_pressed()
 
-            '''if keys[pg.K_ESCAPE]:
-                interior_running = True
-                #save the distance, time, and health in a dictionary 
-                #load interior scene'''
-
             self.player_ship.update(keys, dt)
-
 
             if self.spawn_aster == False:
                 self.asteroids.update(dt_ms) == False
             else:
                 self.asteroids.update(dt_ms)
 
-            # health check
             self.player_health = self.player_ship.health
             if self.player_health <= 0:
                 self.game_over("Assets/images/ui/game_over.png")
+            
+            if self.player_health == 125:
+                self.hole_detected()
 
-            # --- distance countdown ---
-            # base rate per second, doubled when boosting
             rate = DISTANCE_RATE * (2 if self.player_ship.is_boosting else 1)
-            # subtract distance this frame
             self.distance = max(0, self.distance - rate * dt)
 
             if self.distance <= 0:
@@ -198,10 +196,8 @@ class Exterior:
                 if not self.show_delivery:
                     self.show_delivery = True
 
-            # update UI (timer, health bar, etc.)
             self.update_ui()
 
-            # draw everything
             self.screen.blit(self.background, (0, 0))
             self.player_ship.draw(self.screen)
             self.asteroids.update_and_draw(self.screen, self.player_ship)
@@ -213,7 +209,6 @@ class Exterior:
             self.screen.blit(self.current_pizza_timer_img, self.pizza_timer_rect)
             self.screen.blit(self.esc_ship_img, self.esc_ship_rect)
 
-             # — draw distance text in top-left —
             dist_text = f"Distance to customer: {int(self.distance)}"
             text_surf = self.font.render(dist_text, True, (255, 255, 255))
             self.screen.blit(text_surf, (10, 10))
@@ -224,64 +219,48 @@ class Exterior:
                 DELIVER_SPEED = 100 
 
             if self.show_delivery:
-                # — 1) slide the garage into view —
                 if self.delivered_rect.right > SCREEN_WIDTH:
                     self.delivered_rect.x -= DELIVER_SPEED * dt
                 else:
-                    # clamp exactly at the edge
                     self.delivered_rect.right = SCREEN_WIDTH
-
-                    # — 2) once garage is fully in, spawn pizza at ship —
                     if not self.pizza_spawned:
-                        # draw call already happened, so rect is up to date
                         ship_center     = self.player_ship.rect.center
                         self.pizza_rect = self.pizza_img.get_rect(center=ship_center)
                         self.pizza_spawned = True
 
-                # blit the garage
                 self.screen.blit(self.delivered_img, self.delivered_rect)
 
-
                 if self.pizza_spawned:
-                    # Set target destination for the pizza
                     target_x, target_y = SCREEN_WIDTH - 700, SCREEN_HEIGHT - 500
                     self.target_xy = (target_x, target_y)
 
-                    # Get current pizza center
                     px, py = self.pizza_rect.center
-
-                    # Calculate direction vector toward target
                     dx = target_x - px
                     dy = target_y - py
                     distance = (dx**2 + dy**2) ** 0.5
 
                     if distance > 5:
-                        # Normalize and move pizza
                         dx /= distance
                         dy /= distance
                         self.pizza_rect.x += dx * PIZZA_SPEED * dt
                         self.pizza_rect.y += dy * PIZZA_SPEED * dt
                     else:
-                        # Snap to target when close
                         self.pizza_rect.center = self.target_xy
                         self.pizza_rot_speed = 0
 
                     if self.pizza_rect.center == self.target_xy:
                         self.game_over("Assets/images/ui/win_ui.png")
 
-                    # Spin the pizza
                     self.pizza_angle = (self.pizza_angle + self.pizza_rot_speed * dt) % 360
                     rotated = pg.transform.rotozoom(self.pizza_img, self.pizza_angle, 1.0)
                     rot_rect = rotated.get_rect(center=self.pizza_rect.center)
                     self.screen.blit(rotated, rot_rect.topleft)
 
-
-
-
-
+            # ✅ Hole image display during active 3-second window
+            if self.hole_start_time and time.time() - self.hole_start_time < 3:
+                self.screen.blit(self.hole_img, self.hole_rect)
 
             pg.display.flip()
-
 
 
 if __name__ == "__main__":

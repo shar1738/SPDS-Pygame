@@ -1,6 +1,35 @@
 # Scene/interior.py
 import pygame as pg
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
+from functions import Animation
+import Entities.pizza_box
+import Entities.goo_gun
+
+SPACEMAN_MOVE_ANIMATION = {
+    "paths": [
+        "Assets/images/spaceman/spaceman1.png",
+        "Assets/images/spaceman/spaceman2.png",
+        "Assets/images/spaceman/spaceman3.png",
+    ],
+    "size":  (100, 100),
+    "speed": 0.15,
+}
+
+
+
+
+class Minigame:
+    pass
+
+cockpit_img = pg.image.load('Assets/images/cockpit.png')
+
+class Cockpit:
+    pass
+
+cargo_img = pg.image.load('Assets/images/storage.png')
+
+class Cargo:
+    pass
 
 class Interior:
     def __init__(self, screen):
@@ -27,5 +56,7 @@ class Interior:
             self.screen.blit(text, rect)
             pg.display.flip()
             self.clock.tick(60)
+        
+
 
 

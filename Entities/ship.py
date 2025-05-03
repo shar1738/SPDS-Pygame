@@ -153,6 +153,26 @@ class Ship:
         w, h = pg.display.get_surface().get_size()
         self.pos.y = max(0, min(h, self.pos.y))
 
+        # Update mask and rect for collision
+        current_frame = (
+            self.override_image if self.override_image else
+            self.damage_anim.get_current_frame() if self.is_damaged else
+            self.boost_anim.get_current_frame() if self.is_boosting else
+            self.basic_anim.get_current_frame()
+        )
+        rotated = pg.transform.rotozoom(current_frame, -self.angle, 1)
+        self.image = rotated
+        self.rect = rotated.get_rect(center=self.pos)
+
+        # Create and rotate hitbox
+        hitbox_surface = pg.Surface((self.hitbox_length, self.hitbox_height), pg.SRCALPHA)
+        pg.draw.rect(hitbox_surface, (255, 255, 255), (0, 0, self.hitbox_length, self.hitbox_height))
+        rotated_hitbox = pg.transform.rotozoom(hitbox_surface, -self.angle, 1)
+        offset_vector = pg.Vector2(200, 0).rotate(-self.angle)
+        self.mask = pg.mask.from_surface(self.image)
+        self.mask_rect = rotated_hitbox.get_rect(center=(self.pos + offset_vector))
+
+
     def draw(self, surface):
         # Update animation frame
         if self.override_image:
@@ -176,17 +196,6 @@ class Ship:
         # Create rectangular hitbox surface
         hitbox_surface = pg.Surface((self.hitbox_length, self.hitbox_height), pg.SRCALPHA)
         pg.draw.rect(hitbox_surface, (255, 255, 255), (0, 0, self.hitbox_length, self.hitbox_height))
-
-        # Apply same rotation to hitbox
-        rotated_hitbox = pg.transform.rotozoom(hitbox_surface, -self.angle, 1)
-
-        # Compute rotated offset vector for hitbox position
-        offset_x = 200  # distance forward from ship center
-        offset_vector = pg.Vector2(offset_x, 0).rotate(-self.angle)
-
-        # Store rotated mask and rect at correct hitbox position
-        self.mask = pg.mask.from_surface(self.image)
-        self.mask_rect = rotated_hitbox.get_rect(center=(self.pos + offset_vector))
 
         # Draw ship
         surface.blit(self.image, self.rect.topleft)

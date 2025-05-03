@@ -30,7 +30,13 @@ EXT_UI_ELEMENTS = {
     "esc_ship": {
         "paths": ["Assets/images/ship/escape_interior.png"],
         "size": (200, 200)
+    },
+    "hole": {
+        "paths": ["Assets/images/ui/hole_found.png"],
+        'size': (256, 256)
     }
+
 }
+
 
 IS_DAMAGED = False
