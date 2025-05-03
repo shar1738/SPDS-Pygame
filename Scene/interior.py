@@ -1,7 +1,7 @@
 # Scene/interior.py
 import pygame as pg
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
-from functions import Animation
+from funcs_data.functions import Animation
 import Entities.pizza_box
 import Entities.goo_gun
 

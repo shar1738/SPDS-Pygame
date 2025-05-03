@@ -1,7 +1,7 @@
 import pygame as pg
 import time
-from functions import Animation
-from data import IS_DAMAGED
+from funcs_data.functions import Animation
+from funcs_data.data import IS_DAMAGED
 
 # Constants
 THRUST_POWER       = 0.3

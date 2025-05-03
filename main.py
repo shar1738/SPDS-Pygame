@@ -1,6 +1,6 @@
 import pygame as pg
 import settings as S
-from scene_manager import SCENES
+from funcs_data.scene_manager import SCENES
 
 
 

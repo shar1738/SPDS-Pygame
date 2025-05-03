@@ -2,7 +2,7 @@ import pygame as pg
 import sys
 import random
 import time
-from data import EXT_UI_ELEMENTS
+from funcs_data.data import EXT_UI_ELEMENTS
 from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
 from Entities.ship import Ship
 from Entities.asteroids import Asteroids, IS_INV  

@@ -1,6 +1,6 @@
 import pygame as pg
 import random
-from functions import Animation
+from funcs_data.functions import Animation
 import settings as S
 
 IS_INV = False
