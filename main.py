@@ -20,7 +20,6 @@ class Main:
         exterior = SCENES["Exterior"]()
         exterior.run()
 
-
         #interior = SCENES["Interior"]()
         #inerior.run
     

@@ -1,12 +1,13 @@
 import pygame as pg
 import random
+import globals
 from funcs_data.functions import Animation
 import settings as S
 
 IS_INV = False
 ASTEROID_SIZE = (50, 50)
 INV_DURATION_FRAMES = 120  # 2 seconds at 60 FPS
-DAMAGE_AMOUNT = 25
+DAMAGE_AMOUNT = globals.GLOBAL_DAMAGE
 
 # Configuration for asteroid assets
 ASSET_CONFIG = {
@@ -31,7 +32,7 @@ class Asteroids:
 
         self.asteroid_list = []
         self.spawn_timer = 0
-        self.spawn_interval = 150
+        self.spawn_interval = 175
         self.is_inv = IS_INV
         self.inv_timer = 0
         self.can_spawn = True

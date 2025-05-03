@@ -1,4 +1,8 @@
 import pygame as pg
+
+import globals
+
+
 import sys
 import random
 import time
@@ -9,13 +13,8 @@ from Entities.asteroids import Asteroids, IS_INV
 
 DISTANCE_RATE = 5
 DISTANCE = 0
-DISTANCE_MAX = (100, 110)
+DISTANCE_MAX = globals.GLOBAL_DIST_MAX
 PIZZA_SPEED = 200
-
-SAVED_STATS = {
-
-}
-
 
 def load_scaled_image(path, size):
     return pg.transform.scale(pg.image.load(path).convert_alpha(), size)
@@ -32,7 +31,7 @@ class Exterior:
         self.background = pg.image.load("Assets/images/background.png").convert()
         self.background = pg.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pg.time.Clock()
-        self.distance = random.randint(DISTANCE_MAX[0], DISTANCE_MAX[1])
+        self.distance = globals.GLOBAL_DISTANCE
 
         self.player_ship = Ship(150, 300)
         self.asteroids = Asteroids()
@@ -71,8 +70,11 @@ class Exterior:
         self.ui_nitro_img = load_scaled_image(self.nitro_info["paths"][0], self.nitro_info["size"])
         self.costumer_lbl_img = load_scaled_image(self.costumer_lbl_info["paths"][0], self.costumer_lbl_info["size"])
         self.esc_ship_img = load_scaled_image(self.esc_info["paths"][0], self.esc_info["size"])
-        self.ui_costumer_img = load_scaled_image(self.costumer_info["paths"][random.randint(0, len(self.costumer_info["paths"]) - 1)],self.nitro_info["size"])
         self.hole_img = load_scaled_image(self.hole_info["paths"][0], self.hole_info["size"])
+        self.ui_costumer_img = load_scaled_image(globals.GLOBAL_COSTUMER, self.nitro_info["size"])  
+        
+
+        
 
         # Preload pizza timer frames
         self.pizza_timer_frames = [
@@ -80,7 +82,7 @@ class Exterior:
             for path in self.pizza_timer_info["paths"]
         ]
         self.current_pizza_timer_img = self.pizza_timer_frames[0]
-        self.pizza_timer_total = random.randint(30, 120)  # 30s to 2 minutes
+        self.pizza_timer_total = globals.GLOBAL_PIZZA_TIME
         self.pizza_timer_start = time.time()
         self.pizza_timer_rect = self.pizza_timer_frames[0].get_rect(topright=(SCREEN_WIDTH - 150, 0))
 
@@ -96,12 +98,13 @@ class Exterior:
 
     def update_ui(self):
         # — health bar as before — 
-        max_health = 150
-        step = 25
-
+        max_health = globals.GLOBAL_HEALTH
+        step = globals.GLOBAL_DAMAGE
+    
         index = min(
             len(self.health_info["paths"]) - 1,
             (max_health - self.player_health) // step
+
         )
         self.ui_health_img = load_scaled_image(
             self.health_info["paths"][index],

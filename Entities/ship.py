@@ -1,4 +1,5 @@
 import pygame as pg
+from globals import GLOBAL_HEALTH
 import time
 from funcs_data.functions import Animation
 from funcs_data.data import IS_DAMAGED
@@ -67,7 +68,7 @@ class Ship:
         self.hitbox_height   = 60  # height
 
         # Ship stats
-        self.health = 150
+        self.health = GLOBAL_HEALTH
 
         # Load and scale animations
         basic_size = (
