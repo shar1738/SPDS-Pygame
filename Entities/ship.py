@@ -60,6 +60,7 @@ class Ship:
         self.is_boosting     = False
         self.is_damaged      = IS_DAMAGED
         self.damage_timer    = 0
+        self.override_image = None  
 
         # Custom hitbox size
         self.hitbox_length   = 40  # width
@@ -105,7 +106,10 @@ class Ship:
         self.boost_start_time = 0  
         self.boost_duration = 5  
         self.boost_cooldown_time = 0  
-        self.boost_cooldown_duration = 5  
+        self.boost_cooldown_duration = 5 
+
+    def set_override_image(self, image: pg.Surface):
+        self.override_image = image
 
     def update(self, keys, dt):
         # Rotation
@@ -151,16 +155,19 @@ class Ship:
 
     def draw(self, surface):
         # Update animation frame
-        if self.is_damaged:
-            self.damage_anim.update()
-            frame = self.damage_anim.get_current_frame()
-        elif self.is_boosting:
-            self.boost_anim.update()
-            frame = self.boost_anim.get_current_frame()
+        if self.override_image:
+            frame = self.override_image
         else:
-            self.basic_anim.update()
-            frame = self.basic_anim.get_current_frame()
-        
+            if self.is_damaged:
+                self.damage_anim.update()
+                frame = self.damage_anim.get_current_frame()
+            elif self.is_boosting:
+                self.boost_anim.update()
+                frame = self.boost_anim.get_current_frame()
+            else:
+                self.basic_anim.update()
+                frame = self.basic_anim.get_current_frame()
+
         # Rotate ship image
         rotated = pg.transform.rotozoom(frame, -self.angle, 1)
         self.image = rotated

@@ -21,7 +21,6 @@ class Main:
         exterior.run()
 
 
-
         #interior = SCENES["Interior"]()
         #inerior.run
     
