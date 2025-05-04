@@ -1,15 +1,12 @@
 import pygame as pg
-
-import globals
-
-
 import sys
-import random
 import time
 from funcs_data.data import EXT_UI_ELEMENTS
 from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
 from Entities.ship import Ship
-from Entities.asteroids import Asteroids, IS_INV  
+from Entities.asteroids import Asteroids, IS_INV
+import globals  
+from sfx import ship_basic_sfx, ship_boost_sfx, yay_sfx
 
 DISTANCE_RATE = 5
 DISTANCE = 0
@@ -23,6 +20,7 @@ def load_scaled_image(path, size):
 class Exterior:
     def __init__(self):
         pg.init()
+        pg.mixer.init()
         pg.display.set_caption("S.P.D.S")
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.interior_running = False
@@ -34,6 +32,9 @@ class Exterior:
         self.distance = globals.GLOBAL_DISTANCE
 
         self.player_ship = Ship(150, 300)
+        self.override_img = pg.image.load("Assets/images/ship/basic_ship.png").convert_alpha()
+        self.override_img = pg.transform.scale(self.override_img, (200, 200))
+
         self.asteroids = Asteroids()
         self.asteroids.spawn_rand(5)
         self.is_inv = IS_INV
@@ -216,8 +217,12 @@ class Exterior:
             text_surf = self.font.render(dist_text, True, (255, 255, 255))
             self.screen.blit(text_surf, (10, 10))
             
+            ship_boost_sfx.set_volume(0.01)
+            #music.set_volume(0.1)
+            #music.play()
             if self.player_ship.is_boosting:
                 DELIVER_SPEED * 5
+                ship_boost_sfx.play()
             else:
                 DELIVER_SPEED = 100 
 
@@ -226,6 +231,7 @@ class Exterior:
                     self.delivered_rect.x -= DELIVER_SPEED * dt
                 else:
                     self.delivered_rect.right = SCREEN_WIDTH
+                    self.player_ship.set_override_image(self.override_img)
                     if not self.pizza_spawned:
                         ship_center     = self.player_ship.rect.center
                         self.pizza_rect = self.pizza_img.get_rect(center=ship_center)
@@ -252,12 +258,17 @@ class Exterior:
                         self.pizza_rot_speed = 0
 
                     if self.pizza_rect.center == self.target_xy:
+                        yay_sfx.play()
                         self.game_over("Assets/images/ui/win_ui.png")
+                        
 
                     self.pizza_angle = (self.pizza_angle + self.pizza_rot_speed * dt) % 360
                     rotated = pg.transform.rotozoom(self.pizza_img, self.pizza_angle, 1.0)
                     rot_rect = rotated.get_rect(center=self.pizza_rect.center)
                     self.screen.blit(rotated, rot_rect.topleft)
+
+                    
+            
 
             # ✅ Hole image display during active 3-second window
             if self.hole_start_time and time.time() - self.hole_start_time < 3:

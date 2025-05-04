@@ -1,6 +1,7 @@
 import pygame as pg
 import random
 import globals
+from sfx import collision_sfx
 from funcs_data.functions import Animation
 import settings as S
 
@@ -59,7 +60,6 @@ class Asteroids:
                 "hitbox_offset": offset,
             })
 
-    @staticmethod
     def calculate_hitbox(pos, offset):
         """Return a pygame.Rect for the asteroid's hitbox based on offset."""
         ox, oy, w, h = offset
@@ -105,6 +105,7 @@ class Asteroids:
                     ship.take_damage(DAMAGE_AMOUNT)
                     ship.is_damaged = True
                     ship.damage_timer = 0.5
+                    collision_sfx.play()
 
                     self.is_inv = True
                     self.inv_timer = INV_DURATION_FRAMES
