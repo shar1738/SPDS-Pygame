@@ -1,6 +1,6 @@
 import pygame as pg
 import random
-import globals
+from globals import DAMAGE
 from sfx import collision_sfx
 from funcs_data.functions import Animation
 from funcs_data.data import ASTEROID_CONFIG, ASTEROID_SIZE
@@ -9,8 +9,7 @@ import settings as S
 IS_INV = False
 ASTEROID_SIZE = ASTEROID_SIZE
 INV_DURATION_FRAMES = 120  # 2 seconds at 60 FPS
-DAMAGE_AMOUNT = globals.GLOBAL_DAMAGE
-
+DAMAGE_AMOUNT = DAMAGE
 
 class Asteroids:
     def __init__(self):

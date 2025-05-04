@@ -1,43 +1,47 @@
-
-from settings import FPS, SCREEN_HEIGHT, SCREEN_WIDTH
-import pygame
+import pygame as pg
 import sys
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
+from sfx import gooing_sfx
 
-class SealantMinigame:
+class MiniGame:
     def __init__(self, screen_size=(SCREEN_WIDTH, SCREEN_HEIGHT)):
-        pygame.init()
-
-        self.screen = pygame.display.set_mode(screen_size)
-        pygame.display.set_caption("Seal the Hole")
-        self.clock = pygame.time.Clock()
-
-        # Load images (ensure these are in your working directory or provide full paths)
-        self.background = pygame.Surface(screen_size)
-        self.background.fill((30, 30, 30))
-
-        self.hole_image = pygame.image.load("hole.png").convert_alpha()  # transparent PNG
-        self.sealant_brush = pygame.image.load("sealant.png").convert_alpha()  # sealant dot
-
-        # Get rect for hole placement and size
-        self.hole_rect = self.hole_image.get_rect(center=(screen_size[0] // 2, screen_size[1] // 2))
-
-        # Surface to accumulate sealant drawing
-        self.sealant_surface = pygame.Surface(screen_size, pygame.SRCALPHA)
-
-        # Store screen size
+        pg.init()
+        pg.mixer.init()
         self.screen_width, self.screen_height = screen_size
+
+        self.screen = pg.display.set_mode(screen_size)
+        pg.display.set_caption("Seal the Hole")
+        self.clock = pg.time.Clock()
+
+        # Load and scale background image
+        bg_img = pg.image.load("Assets/images/minigame/cockpit_wall.png").convert_alpha() 
+        self.background = pg.transform.scale(bg_img, screen_size)
+
+        # Load and scale "hole sealed" image
+        sealed_img = pg.image.load("Assets/images/minigame/hole_sealed.png").convert_alpha() 
+        self.sealed_img = pg.transform.scale(sealed_img, (254, 254)) 
+        self.sealed_rect = self.sealed_img.get_rect(center=(self.screen_width // 2, 125))
+
+        # Load and scale hole image
+        original_hole = pg.image.load("Assets/images/minigame/hole1.png").convert_alpha()
+        self.hole = pg.transform.scale(original_hole, (254, 254))
+        self.hole_rect = self.hole.get_rect(center=(self.screen_width // 2, self.screen_height // 2))
+
+        # Surface to accumulate green circle drawing (sealant)
+        self.sealant_surface = pg.Surface(screen_size, pg.SRCALPHA)
+
+        # Sealant brush settings
+        self.brush_radius = 17
+        self.brush_color = (165, 227, 141)
 
         self.mouse_down = False
         self.hole_filled = False
-        self.threshold_fill_percent = 0.9
-        self.font = pygame.font.SysFont(None, 48)
+        self.threshold_fill_percent = 1
+        self.font = pg.font.SysFont(None, 48)
 
     def get_fill_percentage(self):
-        """
-        Compare how many visible hole pixels have been covered by sealant using alpha channel comparison.
-        """
-        hole_alpha = pygame.surfarray.pixels_alpha(self.hole_image)
-        seal_alpha = pygame.surfarray.pixels_alpha(self.sealant_surface)
+        hole_alpha = pg.surfarray.pixels_alpha(self.hole)
+        seal_alpha = pg.surfarray.pixels_alpha(self.sealant_surface)
 
         filled = 0
         total = 0
@@ -48,7 +52,6 @@ class SealantMinigame:
                 screen_y = self.hole_rect.top + y
 
                 if 0 <= screen_x < self.screen_width and 0 <= screen_y < self.screen_height:
-                    # Only check pixels where hole image is visible (alpha > 0)
                     if hole_alpha[x][y] > 0:
                         total += 1
                         if seal_alpha[screen_x][screen_y] > 0:
@@ -60,41 +63,41 @@ class SealantMinigame:
         while True:
             self.screen.blit(self.background, (0, 0))
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    pg.quit()
                     sys.exit()
-                elif event.type == pygame.MOUSEBUTTONDOWN:
+                elif event.type == pg.MOUSEBUTTONDOWN:
                     self.mouse_down = True
-                elif event.type == pygame.MOUSEBUTTONUP:
+                    gooing_sfx.set_volume(0.1)
+                    gooing_sfx.play()
+                elif event.type == pg.MOUSEBUTTONUP:
+                    gooing_sfx.set_volume(0)
                     self.mouse_down = False
 
-            # Draw the hole image
-            self.screen.blit(self.hole_image, self.hole_rect)
 
-            # Draw accumulated sealant on top
+            # Draw the hole
+            self.screen.blit(self.hole, self.hole_rect)
+
+            # Draw accumulated green sealant
             self.screen.blit(self.sealant_surface, (0, 0))
 
-            # Handle brush painting
+            # Handle drawing with brush
             if self.mouse_down and not self.hole_filled:
-                mouse_pos = pygame.mouse.get_pos()
+                mouse_pos = pg.mouse.get_pos()
                 if self.hole_rect.collidepoint(mouse_pos):
-                    # Draw sealant image centered at mouse
-                    brush_rect = self.sealant_brush.get_rect(center=mouse_pos)
-                    self.sealant_surface.blit(self.sealant_brush, brush_rect)
+                    pg.draw.circle(self.sealant_surface, self.brush_color, mouse_pos, self.brush_radius)
 
-            # Check fill status
+            # Check fill completion
             if not self.hole_filled:
                 fill_pct = self.get_fill_percentage()
                 if fill_pct >= self.threshold_fill_percent:
                     self.hole_filled = True
                     print("Hole sealed!")
 
-            # Display win text
+            # Show sealed indicator
             if self.hole_filled:
-                text = self.font.render("HOLE SEALED!", True, (0, 255, 0))
-                self.screen.blit(text, (self.screen_width // 2 - 120, 100))
+                self.screen.blit(self.sealed_img, self.sealed_rect)
 
-            pygame.display.flip()
+            pg.display.flip()
             self.clock.tick(FPS)
-

@@ -16,8 +16,11 @@ class Main:
         menu = SCENES["MainMenu"]()
         menu.run() 
 
-        exterior = SCENES["Exterior"]()
-        exterior.run()
+        mini_game = SCENES["MiniGame"]()
+        mini_game.run()
+
+        #exterior = SCENES["Exterior"]()
+        #exterior.run()
 
         #interior = SCENES["Interior"]()
         #inerior.run

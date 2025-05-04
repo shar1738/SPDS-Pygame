@@ -1,29 +1,29 @@
 import pygame as pg
+import random
 import json
 import sys
 import time
-import globals  
 from Entities.ship import Ship
 from Entities.asteroids import Asteroids, IS_INV
 from funcs_data.data import EXT_UI_ELEMENTS
 from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
 from sfx import ship_basic_sfx, ship_boost_sfx, yay_sfx, alarm_sfx, fail_sfx
-
-
-with open('game_data', 'r') as file:
-    GAME_DATA = json.load(file)
+from globals import HEALTH, DAMAGE #, TIME, DIST_REMAINING, CURRENT_COSTUMER
 
 ship_boost_sfx.set_volume(0.01)
 alarm_sfx.set_volume(0.03)
 fail_sfx.set_volume(0.5)
 DISTANCE_RATE = 5
-DISTANCE = 0
-DISTANCE_MAX = globals.GLOBAL_DIST_MAX
+
+INI_DISTANCE = 0
+DIST_RANGE = (20, 300)
+MAX_DISTANCE = random.randint(DIST_RANGE[0], DIST_RANGE[1])
+
 PIZZA_SPEED = 200
+
 
 def load_scaled_image(path, size):
     return pg.transform.scale(pg.image.load(path).convert_alpha(), size)
-
 
 class Exterior:
     def __init__(self):
@@ -31,13 +31,11 @@ class Exterior:
         pg.mixer.init()
         pg.display.set_caption("S.P.D.S")
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.interior_running = False
-        self.exterior_running = True
 
         self.background = pg.image.load("Assets/images/background.png").convert()
         self.background = pg.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pg.time.Clock()
-        self.distance = globals.GLOBAL_DISTANCE
+        self.distance = MAX_DISTANCE
 
         self.player_ship = Ship(150, 300)
         self.override_img = pg.image.load("Assets/images/ship/basic_ship.png").convert_alpha()
@@ -48,8 +46,8 @@ class Exterior:
         self.asteroids.spawn_rand(5)
         
         self.spawn_aster = True
-        self.hole_shown = False  # Has the hole image been triggered?
-        self.hole_start_time = None  # When did the image start showing?
+        self.hole_shown = False  
+        self.hole_start_time = None  
 
         #start of ui bs
         self.delivered_img  = pg.image.load("Assets/images/ui/garage_(delivered).png").convert_alpha()
@@ -70,6 +68,7 @@ class Exterior:
         self.health_info = EXT_UI_ELEMENTS["health"]
         self.nitro_info = EXT_UI_ELEMENTS["nitro"]
         self.costumer_info = EXT_UI_ELEMENTS["costumers"]
+        COSTUMER = random.choice(self.costumers_info["paths"])
         self.costumer_lbl_info = EXT_UI_ELEMENTS["costumer_label"]
         self.pizza_timer_info = EXT_UI_ELEMENTS["pizza_timer"]
         self.esc_info = EXT_UI_ELEMENTS["esc_ship"]
@@ -81,21 +80,18 @@ class Exterior:
         self.costumer_lbl_img = load_scaled_image(self.costumer_lbl_info["paths"][0], self.costumer_lbl_info["size"])
         self.esc_ship_img = load_scaled_image(self.esc_info["paths"][0], self.esc_info["size"])
         self.hole_img = load_scaled_image(self.hole_info["paths"][0], self.hole_info["size"])
-        self.ui_costumer_img = load_scaled_image(globals.GLOBAL_COSTUMER, self.nitro_info["size"])  
+        self.ui_costumer_img = load_scaled_image(COSTUMER, self.nitro_info["size"])  
         
-
         
-
         # Preload pizza timer frames
         self.pizza_timer_frames = [
             load_scaled_image(path, self.pizza_timer_info["size"])
             for path in self.pizza_timer_info["paths"]
         ]
         self.current_pizza_timer_img = self.pizza_timer_frames[0]
-        self.pizza_timer_total = globals.GLOBAL_PIZZA_TIME
-        self.pizza_timer_start = time.time()
+        self.rand_time = random.randint(30, 120)
+        self.timer_start = time.time()
         self.pizza_timer_rect = self.pizza_timer_frames[0].get_rect(topright=(SCREEN_WIDTH - 150, 0))
-
 
         # Position customer at the top-right corner
         self.ui_costumer_rect = self.ui_costumer_img.get_rect(topright=(SCREEN_WIDTH, 0))
@@ -108,8 +104,8 @@ class Exterior:
 
     def update_ui(self):
         # — health bar as before — 
-        max_health = globals.GLOBAL_HEALTH
-        step = globals.GLOBAL_DAMAGE
+        max_health = HEALTH
+        step = DAMAGE
     
         index = min(
             len(self.health_info["paths"]) - 1,
@@ -131,13 +127,13 @@ class Exterior:
         # — only update the pizza timer if we haven’t arrived yet —
         if self.distance > 0:
             # Pizza timer countdown
-            elapsed   = time.time() - self.pizza_timer_start
-            remaining = max(0, self.pizza_timer_total - elapsed)
+            elapsed   = time.time() - self.timer_start
+            remaining = max(0, self.rand_time - elapsed)
 
             num_progress_frames = len(self.pizza_timer_frames) - 2
 
             if remaining > 0:
-                percent_complete = 1 - (remaining / self.pizza_timer_total)
+                percent_complete = 1 - (remaining / self.rand_time)
                 frame_index      = int(percent_complete * num_progress_frames)
             else:
                 frame_index = len(self.pizza_timer_frames) - 1

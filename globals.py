@@ -1,16 +1,13 @@
 import random 
 from funcs_data.data import EXT_UI_ELEMENTS
 
-GLOBAL_HEALTH = 150
-GLOBAL_DAMAGE = 25
+HEALTH = 150
+DAMAGE = 25
+#REMAINING_TIME =
+#PIZZA_TIMER_INDEX = 
+#REMAINING_DIST =
+#CURRENT_COSTUMER =
 
-costumers_info = EXT_UI_ELEMENTS["costumers"]
-GLOBAL_COSTUMER = random.choice(costumers_info["paths"])
-
-print(GLOBAL_COSTUMER)
 
 
-GLOBAL_DIST_MAX = (20, 300)
-GLOBAL_DISTANCE = random.randint(GLOBAL_DIST_MAX[0], GLOBAL_DIST_MAX[1])
 
-GLOBAL_PIZZA_TIME = random.randint(30, 120)
