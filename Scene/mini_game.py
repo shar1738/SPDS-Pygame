@@ -1,12 +1,15 @@
 import pygame as pg
 import sys
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
+from game_manager import GameState
 from sfx import gooing_sfx
 
 class MiniGame:
-    def __init__(self, screen_size=(SCREEN_WIDTH, SCREEN_HEIGHT)):
+    def __init__(self, game_state: GameState):
         pg.init()
         pg.mixer.init()
+        self.game_state = game_state
+        screen_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
         self.screen_width, self.screen_height = screen_size
 
         self.screen = pg.display.set_mode(screen_size)

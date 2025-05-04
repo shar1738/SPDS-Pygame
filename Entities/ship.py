@@ -1,5 +1,5 @@
 import pygame as pg
-from globals import HEALTH
+from game_manager import GameState
 import time
 from funcs_data.functions import Animation
 from funcs_data.data import IS_DAMAGED, BASIC_ANIMATION, BOOST_ANIMATION, DAMAGE_ANIMATION
@@ -11,12 +11,12 @@ ROTATION_SPEED     = 3
 MAX_ANGLE          = 60  # degrees up and down
 SCALE_FACTOR       = 2
 
-
 class Ship:
     def __init__(self, x, y):
         pg.init()
 
-        # Position and movement
+        self.game_state = GameState()
+        self.player_health = self.game_state.player_health
         self.pos             = pg.Vector2(x, y)
         self.vel             = pg.Vector2(0, 0)
         self.angle           = 0
@@ -28,9 +28,7 @@ class Ship:
         # Custom hitbox size
         self.hitbox_length   = 40  # width
         self.hitbox_height   = 60  # height
-
-        # Ship stats
-        self.health = HEALTH
+       
 
         # Load and scale animations
         basic_size = (
@@ -96,14 +94,6 @@ class Ship:
             if not self.is_boosting and (current_time - self.boost_cooldown_time) > self.boost_cooldown_duration:
                 self.is_boosting = True
                 self.boost_start_time = current_time
-
-        if keys[pg.K_ESCAPE]:
-            #set rate to 0
-            #get health
-            #get time
-            #switch to the interior scene
-            #save costumer 
-            pass
 
         if self.is_boosting:
             if current_time - self.boost_start_time > self.boost_duration:
@@ -173,10 +163,10 @@ class Ship:
 
 
     def take_damage(self, amount: int):
-        if self.health < 0:
+        if self.player_health < 0:
             print('you dead')
         else:
-            self.health -= amount
+            self.player_health -= amount
 
     def get_mask(self):
         return self.mask, self.mask_rect.topleft

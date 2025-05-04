@@ -8,29 +8,30 @@ from Entities.asteroids import Asteroids, IS_INV
 from funcs_data.data import EXT_UI_ELEMENTS
 from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
 from sfx import ship_basic_sfx, ship_boost_sfx, yay_sfx, alarm_sfx, fail_sfx
-from globals import HEALTH, DAMAGE #, TIME, DIST_REMAINING, CURRENT_COSTUMER
+from game_manager import GameState
 
 ship_boost_sfx.set_volume(0.01)
 alarm_sfx.set_volume(0.03)
 fail_sfx.set_volume(0.5)
-DISTANCE_RATE = 5
 
+
+DISTANCE_RATE = 5
 INI_DISTANCE = 0
 DIST_RANGE = (20, 300)
 MAX_DISTANCE = random.randint(DIST_RANGE[0], DIST_RANGE[1])
-
 PIZZA_SPEED = 200
-
 
 def load_scaled_image(path, size):
     return pg.transform.scale(pg.image.load(path).convert_alpha(), size)
 
-class Exterior:
-    def __init__(self):
+class Exterior():
+    def __init__(self, game_state: GameState):
         pg.init()
         pg.mixer.init()
+        self.game_state = game_state
         pg.display.set_caption("S.P.D.S")
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.health_index = self.game_state.health_index 
 
         self.background = pg.image.load("Assets/images/background.png").convert()
         self.background = pg.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -38,6 +39,7 @@ class Exterior:
         self.distance = MAX_DISTANCE
 
         self.player_ship = Ship(150, 300)
+        self.player_health = self.player_ship.player_health
         self.override_img = pg.image.load("Assets/images/ship/basic_ship.png").convert_alpha()
         self.override_img = pg.transform.scale(self.override_img, (200, 200))
         self.is_inv = IS_INV
@@ -68,7 +70,7 @@ class Exterior:
         self.health_info = EXT_UI_ELEMENTS["health"]
         self.nitro_info = EXT_UI_ELEMENTS["nitro"]
         self.costumer_info = EXT_UI_ELEMENTS["costumers"]
-        COSTUMER = random.choice(self.costumers_info["paths"])
+        COSTUMER = random.choice(self.costumer_info["paths"])
         self.costumer_lbl_info = EXT_UI_ELEMENTS["costumer_label"]
         self.pizza_timer_info = EXT_UI_ELEMENTS["pizza_timer"]
         self.esc_info = EXT_UI_ELEMENTS["esc_ship"]
@@ -104,11 +106,11 @@ class Exterior:
 
     def update_ui(self):
         # — health bar as before — 
-        max_health = HEALTH
-        step = DAMAGE
+        max_health = 150
+        step = 25
     
         index = min(
-            len(self.health_info["paths"]) - 1,
+            len(self.health_info["paths"]) - self.health_index,
             (max_health - self.player_health) // step
 
         )
@@ -170,7 +172,22 @@ class Exterior:
     def hole_detected(self):
         if self.hole_start_time is None:
             self.hole_start_time = time.time()
+    
+    def update(self, exterior_keys):
+        if exterior_keys[pg.K_ESCAPE]:
+            print("ESC pressed - switching scenes")
 
+            # Save values to GameState
+            self.game_state.player_health = self.player_health
+            self.game_state.remaining_time = max(0, self.rand_time - (time.time() - self.timer_start))
+            self.game_state.current_customer = self.ui_costumer_img  # or an ID instead
+            self.game_state.current_level = "Exterior"  # example level tracking
+
+            # Example: setting next scene (assuming you have scene manager elsewhere)
+            self.game_state.next_scene = "MiniGame"  
+
+
+    
     def run(self):
         while True:
             dt_ms = self.clock.tick(FPS)
@@ -180,25 +197,40 @@ class Exterior:
                 if e.type == pg.QUIT:
                     pg.quit()
                     sys.exit()
+                elif e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
+                    max_health = 150
+                    step = 25
+                    holes = (max_health - self.player_health) // step
+
+                    elapsed = time.time() - self.timer_start
+                    remaining_time = max(0, self.rand_time - elapsed)
+
+                    customer_name = self.costumer_info["paths"][0].split("/")[-1].split(".")[0]
+
+                    self.game_state.player_health = self.player_health
+                    self.game_state.remaining_time = int(remaining_time)
+                    self.game_state.current_customer = customer_name
+                    self.game_state.holes = holes
+                    print('working')
+                    
+
+                    self.game_state.current_level = "MiniGame"
+                    return "MiniGame"
 
             keys = pg.key.get_pressed()
-
             self.player_ship.update(keys, dt)
 
-            if self.spawn_aster == False:
+            if not self.spawn_aster:
                 self.asteroids.update(dt_ms) == False
             else:
                 self.asteroids.update(dt_ms)
 
-            self.player_health = self.player_ship.health
             if self.player_health <= 0:
                 fail_sfx.play()
                 self.game_over("Assets/images/ui/game_over.png", 8000)
-                
-            
+
             if self.player_health == 125:
                 self.hole_detected()
-                
 
             rate = DISTANCE_RATE * (2 if self.player_ship.is_boosting else 1)
             self.distance = max(0, self.distance - rate * dt)
@@ -209,6 +241,9 @@ class Exterior:
                     self.show_delivery = True
 
             self.update_ui()
+            
+            exterior_keys = pg.key.get_pressed()
+            self.update(exterior_keys)
 
             self.screen.blit(self.background, (0, 0))
             self.player_ship.draw(self.screen)
@@ -224,24 +259,20 @@ class Exterior:
             dist_text = f"Distance to customer: {int(self.distance)}"
             text_surf = self.font.render(dist_text, True, (255, 255, 255))
             self.screen.blit(text_surf, (10, 10))
-            
-            
-            #music.set_volume(0.1)
-            #music.play()
+
             if self.player_ship.is_boosting:
-                DELIVER_SPEED * 5
                 ship_boost_sfx.play()
             else:
-                DELIVER_SPEED = 100 
+                DELIVER_SPEED = 100
 
             if self.show_delivery:
                 if self.delivered_rect.right > SCREEN_WIDTH:
-                    self.delivered_rect.x -= DELIVER_SPEED * dt
+                    self.delivered_rect.x -= 200 * dt
                 else:
                     self.delivered_rect.right = SCREEN_WIDTH
                     self.player_ship.set_override_image(self.override_img)
                     if not self.pizza_spawned:
-                        ship_center     = self.player_ship.rect.center
+                        ship_center = self.player_ship.rect.center
                         self.pizza_rect = self.pizza_img.get_rect(center=ship_center)
                         self.pizza_spawned = True
 
@@ -259,31 +290,13 @@ class Exterior:
                     if distance > 5:
                         dx /= distance
                         dy /= distance
-                        self.pizza_rect.x += dx * PIZZA_SPEED * dt
-                        self.pizza_rect.y += dy * PIZZA_SPEED * dt
-                    else:
-                        self.pizza_rect.center = self.target_xy
-                        self.pizza_rot_speed = 0
-
-                    if self.pizza_rect.center == self.target_xy:
-                        yay_sfx.play()
-                        self.game_over("Assets/images/ui/win_ui.png", 3000)
-                        
-
-                    self.pizza_angle = (self.pizza_angle + self.pizza_rot_speed * dt) % 360
-                    rotated = pg.transform.rotozoom(self.pizza_img, self.pizza_angle, 1.0)
-                    rot_rect = rotated.get_rect(center=self.pizza_rect.center)
-                    self.screen.blit(rotated, rot_rect.topleft)
-
-                    
-            
-
-            # ✅ Hole image display during active 3-second window
-            if self.hole_start_time and time.time() - self.hole_start_time < 3:
-                alarm_sfx.play()
-                self.screen.blit(self.hole_img, self.hole_rect)
+                        self.pizza_rect.centerx += int(dx * PIZZA_SPEED * dt)
+                        self.pizza_rect.centery += int(dy * PIZZA_SPEED * dt)
+                        self.pizza_angle = (self.pizza_angle + self.pizza_rot_speed * dt) % 360
+                    self.screen.blit(pg.transform.rotate(self.pizza_img, self.pizza_angle), self.pizza_rect)
 
             pg.display.flip()
+
 
 
 if __name__ == "__main__":
