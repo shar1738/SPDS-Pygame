@@ -1,7 +1,8 @@
 import pygame as pg
 import sys
+import random
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
-from game_manager import GameState
+from game_state import GameState
 from sfx import gooing_sfx
 
 class MiniGame:
@@ -17,16 +18,24 @@ class MiniGame:
         self.clock = pg.time.Clock()
 
         # Load and scale background image
-        bg_img = pg.image.load("Assets/images/minigame/cockpit_wall.png").convert_alpha() 
+        bg_img = pg.image.load("Assets/images/minigame/cockpit_wall.png").convert_alpha()
         self.background = pg.transform.scale(bg_img, screen_size)
 
-        # Load and scale "hole sealed" image
-        sealed_img = pg.image.load("Assets/images/minigame/hole_sealed.png").convert_alpha() 
-        self.sealed_img = pg.transform.scale(sealed_img, (254, 254)) 
-        self.sealed_rect = self.sealed_img.get_rect(center=(self.screen_width // 2, 125))
+        sealed_img = pg.image.load("Assets/images/minigame/hole_sealed.png").convert_alpha()
+        self.sealed_img = pg.transform.scale(sealed_img, (254, 254))
+        self.sealed_rect = sealed_img.get_rect(center=(self.screen_width // 2, int(self.screen_height * 0.25)))
 
-        # Load and scale hole image
-        original_hole = pg.image.load("Assets/images/minigame/hole1.png").convert_alpha()
+        sealer_img = pg.image.load("Assets/images/minigame/goon_sealant.png").convert_alpha()
+        self.sealer_img = pg.transform.scale(sealer_img, (254, 254))
+        self.sealer_rect = self.sealer_img.get_rect()
+
+        self.hole_paths = ['Assets/images/minigame/hole1.png',
+                           'Assets/images/minigame/hole2.png',
+                           'Assets/images/minigame/hole3.png',
+                           'Assets/images/minigame/hole4.png']
+        # Load and scale random hole image
+        random_hole_path = random.choice(self.hole_paths)
+        original_hole = pg.image.load(random_hole_path).convert_alpha()
         self.hole = pg.transform.scale(original_hole, (254, 254))
         self.hole_rect = self.hole.get_rect(center=(self.screen_width // 2, self.screen_height // 2))
 
@@ -34,12 +43,12 @@ class MiniGame:
         self.sealant_surface = pg.Surface(screen_size, pg.SRCALPHA)
 
         # Sealant brush settings
-        self.brush_radius = 17
+        self.brush_radius = 25
         self.brush_color = (165, 227, 141)
 
         self.mouse_down = False
         self.hole_filled = False
-        self.threshold_fill_percent = 1
+        self.threshold_fill_percent = 0.99
         self.font = pg.font.SysFont(None, 48)
 
     def get_fill_percentage(self):
@@ -73,17 +82,28 @@ class MiniGame:
                 elif event.type == pg.MOUSEBUTTONDOWN:
                     self.mouse_down = True
                     gooing_sfx.set_volume(0.1)
-                    gooing_sfx.play()
+                    gooing_sfx.play(-1)
+                    print(self.game_state.current_customer)
                 elif event.type == pg.MOUSEBUTTONUP:
                     gooing_sfx.set_volume(0)
                     self.mouse_down = False
 
+            mouse_x, mouse_y = pg.mouse.get_pos()
+            self.sealer_rect.center = (mouse_x, mouse_y)
 
-            # Draw the hole
             self.screen.blit(self.hole, self.hole_rect)
 
-            # Draw accumulated green sealant
             self.screen.blit(self.sealant_surface, (0, 0))
+
+            offset_x = 97 # Adjust this value to move it right
+            offset_y = 48 # Adjust this value to move it down
+
+            # Calculate the blit position using the offset from the mouse center
+            blit_x = mouse_x + offset_x - self.sealer_rect.width // 2
+            blit_y = mouse_y + offset_y - self.sealer_rect.height // 2
+
+            self.screen.blit(self.sealer_img, (blit_x, blit_y)) # Blit at the offset position
+
 
             # Handle drawing with brush
             if self.mouse_down and not self.hole_filled:

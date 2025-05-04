@@ -1,7 +1,7 @@
 import pygame as pg
 import settings as S
 from funcs_data.scene_manager import SCENES
-from game_manager import GameState
+from game_state import GameState
 
 
 class Main:
@@ -21,12 +21,14 @@ class Main:
         interior = SCENES["Interior"](self.game_state)
         mini_game = SCENES["MiniGame"](self.game_state)
 
-        
         exterior.run()
+
+        if self.game_state.current_level == 'Exterior':
+            exterior.run()
 
         if self.game_state.current_level == 'Interior':
             interior.run()
-
+        
         if self.game_state.current_level == 'MiniGame':
             mini_game.run()
     

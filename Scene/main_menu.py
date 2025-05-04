@@ -1,6 +1,6 @@
 import pygame as pg
 from Scene.exterior import Exterior
-from game_manager import GameState
+from game_state import GameState
 import sys
 
 # Configuration for UI assets

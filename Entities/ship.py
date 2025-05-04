@@ -1,5 +1,5 @@
 import pygame as pg
-from game_manager import GameState
+from game_state import GameState
 import time
 from funcs_data.functions import Animation
 from funcs_data.data import IS_DAMAGED, BASIC_ANIMATION, BOOST_ANIMATION, DAMAGE_ANIMATION
@@ -16,7 +16,7 @@ class Ship:
         pg.init()
 
         self.game_state = GameState()
-        self.player_health = self.game_state.player_health
+        self.player_health = self.game_state.ex_health
         self.pos             = pg.Vector2(x, y)
         self.vel             = pg.Vector2(0, 0)
         self.angle           = 0
