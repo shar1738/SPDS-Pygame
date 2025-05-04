@@ -7,80 +7,59 @@ class SealantMinigame:
     def __init__(self, screen_size=(SCREEN_WIDTH, SCREEN_HEIGHT)):
         pygame.init()
 
-        # Create the main screen window
         self.screen = pygame.display.set_mode(screen_size)
         pygame.display.set_caption("Seal the Hole")
-
-        # Clock to control the frame rate
         self.clock = pygame.time.Clock()
 
-        # Hole position and size
-        self.hole_pos = (400, 300)
-        self.hole_radius = 50
+        # Load images (ensure these are in your working directory or provide full paths)
+        self.background = pygame.Surface(screen_size)
+        self.background.fill((30, 30, 30))
 
-        # Color of the sealant (e.g. brownish orange)
-        self.sealant_color = (200, 100, 50)
+        self.hole_image = pygame.image.load("hole.png").convert_alpha()  # transparent PNG
+        self.sealant_brush = pygame.image.load("sealant.png").convert_alpha()  # sealant dot
 
-        # Surface to draw sealant on (independent of the main screen)
-        self.sealant_surface = pygame.Surface(screen_size, pygame.SRCALPHA)  # supports transparency
+        # Get rect for hole placement and size
+        self.hole_rect = self.hole_image.get_rect(center=(screen_size[0] // 2, screen_size[1] // 2))
 
-        # Track whether the mouse is pressed
-        self.mouse_down = False
+        # Surface to accumulate sealant drawing
+        self.sealant_surface = pygame.Surface(screen_size, pygame.SRCALPHA)
 
-        # Flag to track whether the hole has been fully sealed
-        self.hole_filled = False
-
-        # How much of the hole must be filled to count as "sealed" (e.g. 90%)
-        self.threshold_fill_percent = 0.9
-
-        # Font used to display "HOLE SEALED!" message
-        self.font = pygame.font.SysFont(None, 48)
-
-        # Store screen dimensions for bounds checking
+        # Store screen size
         self.screen_width, self.screen_height = screen_size
 
-    def is_in_hole(self, pos):
-        """
-        Check if a point (pos) is within the circular hole.
-        Uses the distance formula.
-        """
-        x, y = pos
-        hx, hy = self.hole_pos
-        return (x - hx) ** 2 + (y - hy) ** 2 <= self.hole_radius ** 2
+        self.mouse_down = False
+        self.hole_filled = False
+        self.threshold_fill_percent = 0.9
+        self.font = pygame.font.SysFont(None, 48)
 
     def get_fill_percentage(self):
         """
-        Count the number of pixels inside the hole that have been covered with sealant.
-        Return the percentage of the hole that is filled.
+        Compare how many visible hole pixels have been covered by sealant using alpha channel comparison.
         """
-        arr = pygame.surfarray.pixels_alpha(self.sealant_surface)  # Get alpha channel (transparency)
+        hole_alpha = pygame.surfarray.pixels_alpha(self.hole_image)
+        seal_alpha = pygame.surfarray.pixels_alpha(self.sealant_surface)
+
         filled = 0
         total = 0
-        hx, hy = self.hole_pos
 
-        # Loop over a square bounding box around the hole
-        for y in range(hy - self.hole_radius, hy + self.hole_radius):
-            for x in range(hx - self.hole_radius, hx + self.hole_radius):
-                # Make sure we stay inside screen bounds
-                if 0 <= x < self.screen_width and 0 <= y < self.screen_height:
-                    # Check if the point is inside the circle
-                    if self.is_in_hole((x, y)):
+        for y in range(self.hole_rect.height):
+            for x in range(self.hole_rect.width):
+                screen_x = self.hole_rect.left + x
+                screen_y = self.hole_rect.top + y
+
+                if 0 <= screen_x < self.screen_width and 0 <= screen_y < self.screen_height:
+                    # Only check pixels where hole image is visible (alpha > 0)
+                    if hole_alpha[x][y] > 0:
                         total += 1
-                        if arr[x][y] > 0:  # Alpha > 0 means sealant was drawn here
+                        if seal_alpha[screen_x][screen_y] > 0:
                             filled += 1
 
-        # Return the ratio of filled to total hole pixels
         return filled / total if total > 0 else 0
 
     def run(self):
-        """
-        Main game loop: handles input, drawing, fill logic, and completion detection.
-        """
         while True:
-            # Fill screen with dark gray background
-            self.screen.fill((30, 30, 30))
+            self.screen.blit(self.background, (0, 0))
 
-            # Handle events like quitting or mouse input
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -90,31 +69,32 @@ class SealantMinigame:
                 elif event.type == pygame.MOUSEBUTTONUP:
                     self.mouse_down = False
 
-            # Draw the hole as a black circle on the main screen
-            pygame.draw.circle(self.screen, (0, 0, 0), self.hole_pos, self.hole_radius)
+            # Draw the hole image
+            self.screen.blit(self.hole_image, self.hole_rect)
 
-            # Draw the sealant surface on top (this accumulates over time)
+            # Draw accumulated sealant on top
             self.screen.blit(self.sealant_surface, (0, 0))
 
-            # If mouse is down and hole hasn't been sealed yet
+            # Handle brush painting
             if self.mouse_down and not self.hole_filled:
-                pos = pygame.mouse.get_pos()
-                if self.is_in_hole(pos):
-                    # Draw a small circle of sealant at the mouse position
-                    pygame.draw.circle(self.sealant_surface, self.sealant_color, pos, 5)
+                mouse_pos = pygame.mouse.get_pos()
+                if self.hole_rect.collidepoint(mouse_pos):
+                    # Draw sealant image centered at mouse
+                    brush_rect = self.sealant_brush.get_rect(center=mouse_pos)
+                    self.sealant_surface.blit(self.sealant_brush, brush_rect)
 
-            # If the hole hasn't been filled yet, check how much is filled
+            # Check fill status
             if not self.hole_filled:
                 fill_pct = self.get_fill_percentage()
                 if fill_pct >= self.threshold_fill_percent:
                     self.hole_filled = True
-                    print("Hole sealed!")  # Trigger your game logic here
+                    print("Hole sealed!")
 
-            # If the hole has been filled, show a message on screen
+            # Display win text
             if self.hole_filled:
                 text = self.font.render("HOLE SEALED!", True, (0, 255, 0))
-                self.screen.blit(text, (300, 100))
+                self.screen.blit(text, (self.screen_width // 2 - 120, 100))
 
-            # Update the display and cap the frame rate at 60 FPS
             pygame.display.flip()
             self.clock.tick(FPS)
+
