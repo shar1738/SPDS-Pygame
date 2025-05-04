@@ -12,7 +12,7 @@ MAX_ANGLE          = 60  # degrees up and down
 SCALE_FACTOR       = 2
 
 class Ship:
-    def __init__(self, x, y):
+    def __init__(self, x, y,):
         pg.init()
 
         self.game_state = GameState()

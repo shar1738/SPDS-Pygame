@@ -8,8 +8,8 @@ class GameState:
         self.ex_remaining_time = None
         self.ex_time_frame = None
 
-    
-        self.holes = []
+        self.current_customer = None
+        self.holes = None
 
         self.current_level = {"Exterior", "Interior", "MiniGame"}
         self.has_interior_ran = False

@@ -3,7 +3,6 @@ import settings as S
 from funcs_data.scene_manager import SCENES
 from game_state import GameState
 
-
 class Main:
     def __init__(self):
         pg.init()
