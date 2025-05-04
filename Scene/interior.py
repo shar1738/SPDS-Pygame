@@ -5,10 +5,6 @@ from funcs_data.functions import Animation
 import Entities.pizza_box
 import Entities.goo_gun
 
-
-class Minigame:
-    pass 
-
 class Interior:
     def __init__(self, screen):
         self.screen = screen
