@@ -1,13 +1,21 @@
 import pygame as pg
+import json
 import sys
 import time
-from funcs_data.data import EXT_UI_ELEMENTS
-from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
+import globals  
 from Entities.ship import Ship
 from Entities.asteroids import Asteroids, IS_INV
-import globals  
-from sfx import ship_basic_sfx, ship_boost_sfx, yay_sfx
+from funcs_data.data import EXT_UI_ELEMENTS
+from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
+from sfx import ship_basic_sfx, ship_boost_sfx, yay_sfx, alarm_sfx, fail_sfx
 
+
+with open('game_data', 'r') as file:
+    GAME_DATA = json.load(file)
+
+ship_boost_sfx.set_volume(0.01)
+alarm_sfx.set_volume(0.03)
+fail_sfx.set_volume(0.5)
 DISTANCE_RATE = 5
 DISTANCE = 0
 DISTANCE_MAX = globals.GLOBAL_DIST_MAX
@@ -34,10 +42,11 @@ class Exterior:
         self.player_ship = Ship(150, 300)
         self.override_img = pg.image.load("Assets/images/ship/basic_ship.png").convert_alpha()
         self.override_img = pg.transform.scale(self.override_img, (200, 200))
+        self.is_inv = IS_INV
 
         self.asteroids = Asteroids()
         self.asteroids.spawn_rand(5)
-        self.is_inv = IS_INV
+        
         self.spawn_aster = True
         self.hole_shown = False  # Has the hole image been triggered?
         self.hole_start_time = None  # When did the image start showing?
@@ -147,12 +156,12 @@ class Exterior:
                 if hasattr(self, "run_out_time"):
                     del self.run_out_time
 
-    def game_over(self, path):
+    def game_over(self, path, delay):
         game_over_img = pg.image.load(path).convert_alpha()
         rect = game_over_img.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(game_over_img, rect.topleft)
         pg.display.flip()
-        pg.time.delay(3000)
+        pg.time.delay(delay)
         pg.quit()
         sys.exit()
     
@@ -187,10 +196,13 @@ class Exterior:
 
             self.player_health = self.player_ship.health
             if self.player_health <= 0:
-                self.game_over("Assets/images/ui/game_over.png")
+                fail_sfx.play()
+                self.game_over("Assets/images/ui/game_over.png", 8000)
+                
             
             if self.player_health == 125:
                 self.hole_detected()
+                
 
             rate = DISTANCE_RATE * (2 if self.player_ship.is_boosting else 1)
             self.distance = max(0, self.distance - rate * dt)
@@ -217,7 +229,7 @@ class Exterior:
             text_surf = self.font.render(dist_text, True, (255, 255, 255))
             self.screen.blit(text_surf, (10, 10))
             
-            ship_boost_sfx.set_volume(0.01)
+            
             #music.set_volume(0.1)
             #music.play()
             if self.player_ship.is_boosting:
@@ -259,7 +271,7 @@ class Exterior:
 
                     if self.pizza_rect.center == self.target_xy:
                         yay_sfx.play()
-                        self.game_over("Assets/images/ui/win_ui.png")
+                        self.game_over("Assets/images/ui/win_ui.png", 3000)
                         
 
                     self.pizza_angle = (self.pizza_angle + self.pizza_rot_speed * dt) % 360
@@ -272,6 +284,7 @@ class Exterior:
 
             # ✅ Hole image display during active 3-second window
             if self.hole_start_time and time.time() - self.hole_start_time < 3:
+                alarm_sfx.play()
                 self.screen.blit(self.hole_img, self.hole_rect)
 
             pg.display.flip()

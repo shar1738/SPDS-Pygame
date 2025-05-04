@@ -2,52 +2,14 @@ import pygame as pg
 from globals import GLOBAL_HEALTH
 import time
 from funcs_data.functions import Animation
-from funcs_data.data import IS_DAMAGED
+from funcs_data.data import IS_DAMAGED, BASIC_ANIMATION, BOOST_ANIMATION, DAMAGE_ANIMATION
 
 # Constants
 THRUST_POWER       = 0.3
 FRICTION           = 0.97
 ROTATION_SPEED     = 3
 MAX_ANGLE          = 60  # degrees up and down
-
 SCALE_FACTOR       = 2
-
-BASIC_ANIMATION = {
-    "paths": [
-        "Assets/images/ship/fire_mini.png",
-        "Assets/images/ship/fire_small.png",
-        "Assets/images/ship/fire_medium.png",
-        "Assets/images/ship/fire_large.png",
-        "Assets/images/ship/fire_colossal.png",
-    ],
-    "size":  (100, 100),
-    "speed": 0.15,
-}
-
-BOOST_ANIMATION = {
-    "paths": [
-        "Assets/images/ship/hyper_plasma.png",
-        "Assets/images/ship/hyper_plasma.png",
-        "Assets/images/ship/hyper_plasma.png",
-        "Assets/images/ship/hyper_plasma_extreme.png",
-        "Assets/images/ship/hyper_plasma_extreme.png",
-        "Assets/images/ship/hyper_plasma_extreme.png",
-        "Assets/images/ship/hyper_plasma_extreme.png",
-        "Assets/images/ship/hyper_plasma_extreme.png",
-        "Assets/images/ship/hyper_plasma_extreme.png",
-        "Assets/images/ship/hyper_plasma_extreme.png",
-    ],
-    "size":  (100, 100),
-    "speed": 0.5,
-}
-
-DAMAGE_ANIMATION = {
-    "paths": [
-        "Assets/images/ship/ship_damage.png"
-    ],
-    "size": (100, 100),
-    "speed": 0.01,
-}
 
 
 class Ship:
@@ -134,6 +96,14 @@ class Ship:
             if not self.is_boosting and (current_time - self.boost_cooldown_time) > self.boost_cooldown_duration:
                 self.is_boosting = True
                 self.boost_start_time = current_time
+
+        if keys[pg.K_ESCAPE]:
+            #set rate to 0
+            #get health
+            #get time
+            #switch to the interior scene
+            #save costumer 
+            pass
 
         if self.is_boosting:
             if current_time - self.boost_start_time > self.boost_duration:

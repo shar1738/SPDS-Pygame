@@ -3,22 +3,13 @@ import random
 import globals
 from sfx import collision_sfx
 from funcs_data.functions import Animation
+from funcs_data.data import ASTEROID_CONFIG, ASTEROID_SIZE
 import settings as S
 
 IS_INV = False
-ASTEROID_SIZE = (50, 50)
+ASTEROID_SIZE = ASTEROID_SIZE
 INV_DURATION_FRAMES = 120  # 2 seconds at 60 FPS
 DAMAGE_AMOUNT = globals.GLOBAL_DAMAGE
-
-# Configuration for asteroid assets
-ASSET_CONFIG = {
-    f"asteroid{i}": {
-        "paths": [f"Assets/images/asteroid{i}.png"],
-        "size": ASTEROID_SIZE,
-        "hitbox_offset": (12.5, 12.5, 25, 25),
-    }
-    for i in range(1, 5)
-}
 
 
 class Asteroids:
@@ -28,7 +19,7 @@ class Asteroids:
                 "image": Animation(cfg["paths"], cfg.get("speed", 0.1), cfg["size"]).get_current_frame(),
                 "hitbox_offset": cfg["hitbox_offset"],
             }
-            for name, cfg in ASSET_CONFIG.items()
+            for name, cfg in ASTEROID_CONFIG.items()
         }
 
         self.asteroid_list = []

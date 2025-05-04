@@ -3,7 +3,6 @@ import settings as S
 from funcs_data.scene_manager import SCENES
 
 
-
 class Main:
     def __init__(self):
         pg.init()
@@ -19,12 +18,9 @@ class Main:
 
         exterior = SCENES["Exterior"]()
         exterior.run()
-        
-
 
         #interior = SCENES["Interior"]()
         #inerior.run
     
-
 if __name__ == "__main__":
     Main().run()

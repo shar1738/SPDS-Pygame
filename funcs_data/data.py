@@ -1,4 +1,52 @@
-# Load UI image paths and sizes
+ASTEROID_SIZE = (50,50)
+IS_DAMAGED = False
+
+DAMAGE_ANIMATION = {
+    "paths": [
+        "Assets/images/ship/ship_damage.png"
+    ],
+    "size": (100, 100),
+    "speed": 0.01,
+}
+
+BASIC_ANIMATION = {
+    "paths": [
+        "Assets/images/ship/fire_mini.png",
+        "Assets/images/ship/fire_small.png",
+        "Assets/images/ship/fire_medium.png",
+        "Assets/images/ship/fire_large.png",
+        "Assets/images/ship/fire_colossal.png",
+    ],
+    "size":  (100, 100),
+    "speed": 0.15,
+}
+
+BOOST_ANIMATION = {
+    "paths": [
+        "Assets/images/ship/hyper_plasma.png",
+        "Assets/images/ship/hyper_plasma.png",
+        "Assets/images/ship/hyper_plasma.png",
+        "Assets/images/ship/hyper_plasma_extreme.png",
+        "Assets/images/ship/hyper_plasma_extreme.png",
+        "Assets/images/ship/hyper_plasma_extreme.png",
+        "Assets/images/ship/hyper_plasma_extreme.png",
+        "Assets/images/ship/hyper_plasma_extreme.png",
+        "Assets/images/ship/hyper_plasma_extreme.png",
+        "Assets/images/ship/hyper_plasma_extreme.png",
+    ],
+    "size":  (100, 100),
+    "speed": 0.5,
+}
+
+ASTEROID_CONFIG = {
+    f"asteroid{i}": {
+        "paths": [f"Assets/images/asteroid{i}.png"],
+        "size": ASTEROID_SIZE,
+        "hitbox_offset": (12.5, 12.5, 25, 25),
+    }
+    for i in range(1, 5)
+}
+
 EXT_UI_ELEMENTS = {
     "costumers": {
         "paths": [f"Assets/images/ui/costumer{i}.png" for i in range(1, 6)],
@@ -37,6 +85,3 @@ EXT_UI_ELEMENTS = {
     }
 
 }
-
-
-IS_DAMAGED = False
