@@ -3,7 +3,17 @@ import sys
 import random
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from game_state import GameState
+import time 
 from sfx import gooing_sfx
+from funcs_data.data import EXT_UI_ELEMENTS  # Make sure EXT_UI_ELEMENTS is imported
+
+def load_scaled_image(path, size):
+    """Safely loads and scales an image."""
+    try:
+        return pg.transform.scale(pg.image.load(path).convert_alpha(), size)
+    except Exception as e:
+        print(f"Error loading {path}: {e}")
+        return pg.Surface(size)  # Returns a blank surface if loading fails
 
 class MiniGame:
     def __init__(self, game_state: GameState):
@@ -16,6 +26,7 @@ class MiniGame:
         self.screen = pg.display.set_mode(screen_size)
         pg.display.set_caption("Seal the Hole")
         self.clock = pg.time.Clock()
+        self.timer_start = time.time()   
 
         # Load and scale background image
         bg_img = pg.image.load("Assets/images/minigame/cockpit_wall.png").convert_alpha()
@@ -23,7 +34,7 @@ class MiniGame:
 
         sealed_img = pg.image.load("Assets/images/minigame/hole_sealed.png").convert_alpha()
         self.sealed_img = pg.transform.scale(sealed_img, (254, 254))
-        self.sealed_rect = sealed_img.get_rect(center=(self.screen_width // 2, int(self.screen_height * 0.25)))
+        self.sealed_rect = self.sealed_img.get_rect(center=(self.screen_width // 2, int(self.screen_height // 2)))
 
         sealer_img = pg.image.load("Assets/images/minigame/goon_sealant.png").convert_alpha()
         self.sealer_img = pg.transform.scale(sealer_img, (254, 254))
@@ -70,9 +81,20 @@ class MiniGame:
                             filled += 1
 
         return filled / total if total > 0 else 0
+    
+    def update_state(self):
+        """Update player state variables and holes dynamically."""
+        self.time = self.game_state.ex_remaining_time
+        self.player_health = self.game_state.ex_health
+        self.holes = self.game_state.holes
+        elapsed = time.time() - self.timer_start
+        self.remaining_time = max(0, self.time - elapsed)
 
     def run(self):
         while True:
+            # Update state at the beginning of each loop iteration
+            self.update_state()
+
             self.screen.blit(self.background, (0, 0))
 
             for event in pg.event.get():
@@ -83,44 +105,66 @@ class MiniGame:
                     self.mouse_down = True
                     gooing_sfx.set_volume(0.1)
                     gooing_sfx.play(-1)
-                    print(self.game_state.current_customer)
                 elif event.type == pg.MOUSEBUTTONUP:
                     gooing_sfx.set_volume(0)
                     self.mouse_down = False
 
             mouse_x, mouse_y = pg.mouse.get_pos()
             self.sealer_rect.center = (mouse_x, mouse_y)
-
             self.screen.blit(self.hole, self.hole_rect)
-
             self.screen.blit(self.sealant_surface, (0, 0))
 
-            offset_x = 97 # Adjust this value to move it right
-            offset_y = 48 # Adjust this value to move it down
-
-            # Calculate the blit position using the offset from the mouse center
+            offset_x = 97  # Adjust this value to move it right
+            offset_y = 48  # Adjust this value to move it down
             blit_x = mouse_x + offset_x - self.sealer_rect.width // 2
             blit_y = mouse_y + offset_y - self.sealer_rect.height // 2
+            self.screen.blit(self.sealer_img, (blit_x, blit_y))  # Blit at the offset position
 
-            self.screen.blit(self.sealer_img, (blit_x, blit_y)) # Blit at the offset position
-
-
-            # Handle drawing with brush
             if self.mouse_down and not self.hole_filled:
                 mouse_pos = pg.mouse.get_pos()
                 if self.hole_rect.collidepoint(mouse_pos):
                     pg.draw.circle(self.sealant_surface, self.brush_color, mouse_pos, self.brush_radius)
 
-            # Check fill completion
             if not self.hole_filled:
                 fill_pct = self.get_fill_percentage()
                 if fill_pct >= self.threshold_fill_percent:
                     self.hole_filled = True
-                    print("Hole sealed!")
 
-            # Show sealed indicator
+            # Render the UI Health and Timer in the MiniGame
+            # Health UI rendered based on the global game_state health index.
+            health_img = load_scaled_image(EXT_UI_ELEMENTS["health"]["paths"][self.game_state.ex_health_index],
+                                        EXT_UI_ELEMENTS["health"]["size"])
+            health_rect = health_img.get_rect(bottomright=(SCREEN_WIDTH // 13.5, SCREEN_HEIGHT - 10))
+            self.screen.blit(health_img, health_rect)
+            
+            # Render timer text using the updated self.remaining_time value.
+            timer_text = self.font.render(f"Time: {int(self.remaining_time)}", True, (0,0,0))
+            self.screen.blit(timer_text, (10, 50))
+
+            # When the hole is filled, update state and exit MiniGame.
             if self.hole_filled:
                 self.screen.blit(self.sealed_img, self.sealed_rect)
+                pg.display.flip()
+                
+                # SYNC HEALTH: Add 25 to global ex_health and recalc the health index.
+                self.game_state.ex_health += 25
+                max_health = 150
+                step = 25
+                new_index = min(len(EXT_UI_ELEMENTS["health"]["paths"]) - 1,
+                                (max_health - self.game_state.ex_health) // step)
+                self.game_state.ex_health_index = new_index
+                self.game_state.ex_health_frame = EXT_UI_ELEMENTS["health"]["paths"][new_index]
+                print("Global ex_health:", self.game_state.ex_health)
+                self.game_state.holes -= 1
+
+                # SYNC TIME: Update the global remaining time based on the mini-game countdown.
+                self.game_state.ex_remaining_time = int(self.remaining_time)
+
+                gooing_sfx.set_volume(0)
+                pg.time.delay(1000)
+                
+                self.game_state.current_level = 'Interior'
+                return self.game_state.current_level
 
             pg.display.flip()
             self.clock.tick(FPS)

@@ -48,9 +48,9 @@ ASTEROID_CONFIG = {
 }
 
 EXT_UI_ELEMENTS = {
-    "costumers": {
-        "paths": [f"Assets/images/ui/costumer{i}.png" for i in range(1, 6)],
-        "size": (256, 256)
+    "customers": {
+        "paths": [f"Assets/images/ui/costumer{i}.png" for i in range(1, 7)],
+        "size": (128, 128)
     },
     "pizza_timer": {
         "paths": [
@@ -81,6 +81,18 @@ EXT_UI_ELEMENTS = {
     },
     "hole": {
         "paths": ["Assets/images/ui/hole_found.png"],
+        'size': (256, 256)
+    },
+    "fix_hole": {
+        'paths': ["Assets/images/ui/press_space.png"],
+        'size': (256, 256)
+    },
+    'esc_interior': {
+        'paths': ['Assets/images/ui/escape_exterior.png'],
+        'size': (256, 256)
+    },
+    'space': {
+        'paths': ['Assets/images/ui/press_space.png'],
         'size': (256, 256)
     }
 
