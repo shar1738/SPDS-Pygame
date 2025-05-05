@@ -10,6 +10,8 @@ ASTEROID_SIZE = ASTEROID_SIZE
 INV_DURATION_FRAMES = 120  # 2 seconds at 60 FPS
 DAMAGE_AMOUNT = 25
 
+collision_sfx.set_volume(0.5)
+
 class Asteroids:
     def __init__(self):
         self.assets = {

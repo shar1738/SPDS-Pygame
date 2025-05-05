@@ -8,7 +8,7 @@ import time
 from Entities.ship import Ship
 from Entities.asteroids import Asteroids, IS_INV
 from funcs_data.data import EXT_UI_ELEMENTS
-from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
+from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT, FONT
 from sfx import ship_basic_sfx, ship_boost_sfx, yay_sfx, fail_sfx, song
 from game_state import GameState
 
@@ -16,11 +16,10 @@ from game_state import GameState
 # =================== CONFIGURATION & CONSTANTS ===================
 DISTANCE_RATE = 5
 INI_DISTANCE = 0
-DIST_RANGE = (20, 300)
-
+START_TIME = random.randint(60, 100)
 PIZZA_SPEED = 200
 
-ship_boost_sfx.set_volume(0.1)
+ship_boost_sfx.set_volume(0.008)
 fail_sfx.set_volume(0.5)
 ship_basic_sfx.set_volume(0.3)
 song.set_volume(0.15)
@@ -33,65 +32,65 @@ def load_scaled_image(path, size):
 
 # =================== EXTERIOR SCENE ===================
 class Exterior:
-    def __init__(self, game_state: GameState):
-        # Init
+    def __init__(self, game_state):
+        # Init Pygame and Mixer
         pg.init()
         pg.mixer.init()
         self.ship_basic_sfx = ship_basic_sfx
         self.clock = pg.time.Clock()
         self.game_state = game_state
-
         self.player_ship = Ship(150, 300)
         self.override_img = load_scaled_image("Assets/images/ship/basic_ship.png", (200, 200))
         
-        # If coming from Interior (or another scene), use stored global health/distance; otherwise use defaults.
+        # --- CUSTOMER SELECTION & TIMER SETUP ---
         if self.game_state.has_interior_ran:
-            # Use the global values (carried over from Interior)
+            # Use values carried over from Interior:
             self.player_health = self.game_state.ex_health
             self.player_ship.player_health = self.game_state.ex_health  # Preserve the damaged health
             self.distance = self.game_state.ex_remaining_dist
-            self.rand_time = self.game_state.ex_remaining_time
+            self.rand_time = self.game_state.ex_remaining_time  # Remaining time from previous scene
+            self.timer_start = time.time()  # Reset timer start for this scene
+            self.game_state.timer_start = self.timer_start
             self.health_index = self.game_state.ex_health_index
-            # Restore stored health image path (if needed)
-            self.health_info = EXT_UI_ELEMENTS["health"]
-            self.health_info["paths"][self.health_index] = self.game_state.ex_health_frame
+            # Load customer image using stored file path:
+            customer_path = self.game_state.current_customer
         else:
-            # First-run or no Interior update: assign default values.
+            # First-run (or no Interior update): assign default values.
             self.player_health = self.player_ship.player_health
             self.distance = random.randint(500, 1000)
             self.game_state.ex_health = self.player_health
             self.game_state.ex_distance = self.distance
             self.health_info = EXT_UI_ELEMENTS["health"]
             self.health_index = min(len(self.health_info["paths"]) - 1, (150 - self.player_health) // 25)
+            self.rand_time = START_TIME
+            self.timer_start = time.time()
+            self.game_state.timer_start = self.timer_start
+            # Randomly select a customer and store its file path:
+            customer_path = random.choice(EXT_UI_ELEMENTS["customers"]["paths"])
+            self.game_state.current_customer = customer_path
         
-        # Build the initial health image based on current health index.
-        self.ui_health_img = load_scaled_image(self.health_info["paths"][self.health_index], self.health_info["size"])
-        
-        # (Optionally update distance defaults again if desired, but that's your original logic)
-        self.game_state.ex_health = self.player_health
-        self.game_state.ex_distance = self.distance
+        # Save the customer path in an instance variable (for later access)
+        self.customer_path = customer_path
+        self.customer_img = load_scaled_image(self.customer_path, EXT_UI_ELEMENTS["customers"]["size"])
 
-        # Screen setup
+        # --- SCREEN & BACKGROUND ---
         pg.display.set_caption("S.P.D.S")
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-
-        # Background
         self.background = load_scaled_image("Assets/images/background.png", (SCREEN_WIDTH, SCREEN_HEIGHT))
-
-        # Asteroids
-        self.is_inv = IS_INV
-        self.hole_shown = False  # Has the hole image been triggered?
-        self.hole_start_time = None  # When did the image start showing?
+        
+        # --- ASTEROIDS & OTHER GAME ELEMENTS ---
+        self.is_inv = False  # Replace IS_INV if defined otherwise.
+        self.hole_shown = False
+        self.hole_start_time = None
         self.asteroids = Asteroids()
         self.asteroids.spawn_rand(5)
         self.spawn_aster = True
 
-        # UI - Delivery
+        # --- UI - DELIVERY & PIZZA ---
         self.delivered_img = pg.image.load("Assets/images/ui/garage_(delivered).png").convert_alpha()
         self.delivered_rect = self.delivered_img.get_rect(topright=(SCREEN_WIDTH + 1500, 0))
         self.show_delivery = False
-
-        # UI - Pizza
+        
         self.raw_pizza = pg.image.load("Assets/images/pizza_box.png").convert_alpha()
         self.pizza_img = pg.transform.scale(self.raw_pizza, (128, 128))
         self.pizza_angle = 0.0
@@ -99,66 +98,67 @@ class Exterior:
         self.pizza_spawned = False
         self.pizza_rect = None
 
-        # UI - Data from EXT_UI_ELEMENTS
+        # --- UI - DATA FROM EXT_UI_ELEMENTS ---
         self.health_info = EXT_UI_ELEMENTS["health"]
         self.nitro_info = EXT_UI_ELEMENTS["nitro"]
-        self.customer_info = random.choice(EXT_UI_ELEMENTS["customers"]["paths"])
         self.customer_LBL_info = EXT_UI_ELEMENTS["costumer_label"]
         self.esc_info = EXT_UI_ELEMENTS["esc_ship"]
         self.hole_info = EXT_UI_ELEMENTS["hole"]
-        self.font = pg.font.SysFont(None, 30)
+        self.font = pg.font.Font(FONT, 30)
 
-        # UI - Static images
+        # --- UI - STATIC IMAGES ---
         self.ui_health_img = load_scaled_image(self.health_info["paths"][0], self.health_info["size"])
-        self.ui_nitro_img = load_scaled_image(self.nitro_info["paths"][0], self.nitro_info["size"])
+        # DO NOT override customer_img here. We're already using the dynamic one.
         self.customer_LBL_img = load_scaled_image(self.customer_LBL_info["paths"][0], self.customer_LBL_info["size"])
         self.esc_ship_img = load_scaled_image(self.esc_info["paths"][0], self.esc_info["size"])
         self.hole_img = load_scaled_image(self.hole_info["paths"][0], self.hole_info["size"])
-        self.customer_img = load_scaled_image(random.choice(EXT_UI_ELEMENTS["customers"]["paths"]),EXT_UI_ELEMENTS["customers"]["size"])
 
+        # --- TIMER (If not coming from Interior, ensure timer values are fresh) ---
+        if not self.game_state.has_interior_ran:
+            self.rand_time = START_TIME
+            self.timer_start = time.time()
+            self.game_state.timer_start = self.timer_start
 
-        self.rand_time = random.randint(5, 10)  # ✅ Assign a single integer
-        self.timer_start = time.time()
-
-        # UI - Rects
+        # --- UI - RECTS ---
         self.customer_rect = self.customer_img.get_rect(topright=(SCREEN_WIDTH, 0))
         self.costumer_lbl_rect = self.customer_LBL_img.get_rect(topright=(SCREEN_WIDTH, 100))
         self.esc_ship_rect = self.esc_ship_img.get_rect(bottomright=(SCREEN_WIDTH - 10, SCREEN_HEIGHT - 10))
         self.hole_rect = self.hole_img.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-        self.ui_health_rect = self.ui_health_img.get_rect(bottomleft=(10, SCREEN_HEIGHT - 10))
-        self.ui_nitro_rect = self.ui_nitro_img.get_rect(bottomleft=(self.ui_health_rect.right + 10, SCREEN_HEIGHT - 50))
+        self.ui_health_rect = load_scaled_image(
+            self.health_info["paths"][self.health_index],
+            self.health_info["size"]
+        ).get_rect(bottomleft=(10, SCREEN_HEIGHT - 10))
+        self.ui_nitro_rect = self.nitro_img = load_scaled_image(
+            self.nitro_info["paths"][0], self.nitro_info["size"]
+        ).get_rect(bottomleft=(self.ui_health_rect.right + 10, SCREEN_HEIGHT - 50))
 
-        # Hole status
+        # --- HOLE STATUS ---
         self.hole_shown = False
         self.hole_start_time = None
 
     # =================== UI UPDATE ===================
     def update_ui(self):
-    # Ensure that player_health is always current from the player ship:
+        # Update health UI based on current health
         self.player_health = self.player_ship.player_health
-
         max_health = 150
         step = 25
-        self.health_index = min(len(self.health_info["paths"]) - 1, (max_health - self.player_health) // step)
-        self.ui_health_img = load_scaled_image(self.health_info["paths"][self.health_index], self.health_info["size"])
-
-        # Save health index to GameState
-        self.game_state.ex_health_index = self.health_index  
-        self.game_state.ex_health_frame = self.health_info["paths"][self.health_index]  # Store image path
-
-        # Load the UI health image based on stored index
+        self.health_index = min(len(self.health_info["paths"]) - 1,
+                                (max_health - self.player_health) // step)
+        self.ui_health_img = load_scaled_image(self.health_info["paths"][self.health_index],
+                                               self.health_info["size"])
+        # Store health index info into game_state
+        self.game_state.ex_health_index = self.health_index
+        self.game_state.ex_health_frame = self.health_info["paths"][self.health_index]
         self.ui_health_img = load_scaled_image(self.game_state.ex_health_frame, self.health_info["size"])
-
         nitro_index = 1 if self.player_ship.is_boosting else 0
         self.ui_nitro_img = load_scaled_image(self.nitro_info["paths"][nitro_index], self.nitro_info["size"])
-
+        
+        # Timer update
         if self.distance > 0:
             elapsed = time.time() - self.timer_start
             self.remaining_time = max(0, self.rand_time - elapsed)
-
             if self.remaining_time == 0:
                 self.game_over("Assets/images/ui/cold_lose.png", 2000)
-
 
     def game_over(self, path, delay):
         game_over_img = pg.image.load(path).convert_alpha()
@@ -178,7 +178,7 @@ class Exterior:
     def hole_detected(self):
         if self.hole_start_time is None:
             self.hole_start_time = time.time()
-            
+
     def run(self):
         self.player_health = self.player_ship.player_health
         while True:
@@ -189,28 +189,23 @@ class Exterior:
                 if e.type == pg.QUIT:
                     pg.quit()
                     sys.exit()
-
                 elif e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
                     max_health = 150
                     step = 25
                     self.holes = (max_health - self.player_health) // step
                     elapsed = time.time() - self.timer_start
                     self.remaining_time = max(0, self.rand_time - elapsed)
-
                     self.game_state.ex_health = self.player_health
                     self.game_state.ex_health_frame = self.health_info["paths"][self.health_index]
                     self.game_state.ex_health_index = self.health_index
                     self.game_state.ex_remaining_time = int(self.remaining_time)
                     self.game_state.ex_remaining_dist = self.distance
-                    self.game_state.current_customer = self.customer_img
+                    # Save the customer image file path (persisting the same customer)
+                    self.game_state.current_customer = self.customer_path
                     print(self.game_state.current_customer)
                     self.game_state.holes = self.holes
-                
-                    self.game_state.has_interior_ran = True
-                    self.game_state.current_level = "Interior"
-
-                    # **Refresh hole tracking when hitting Escape**
-                    return "Interior"
+                    self.game_state.current_level = 'Interior'
+                    return self.game_state.current_level
 
             keys = pg.key.get_pressed()
             self.player_ship.update(keys, dt)

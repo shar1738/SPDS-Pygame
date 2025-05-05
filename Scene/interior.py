@@ -1,10 +1,11 @@
 import pygame as pg
 import sys
 import time
+import random
 from Entities.spaceman import Spaceman
 from Entities.holes import Holes
 from funcs_data.data import EXT_UI_ELEMENTS
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FONT, FPS
 from sfx import fail_sfx
 
 def load_scaled_image(path, size):
@@ -27,13 +28,25 @@ class Interior:
         # Inflating the interior_rect to define an interactive area
         self.interior_rect = self.interior_rect.inflate(-400, -300)
         self.interior_rect.y -= 95  
-        self.interior_rect.x += 30  
+        self.interior_rect.x += 30
 
+        self.customer_LBL_info = EXT_UI_ELEMENTS["costumer_label"]
+        self.customer_LBL_img = load_scaled_image(self.customer_LBL_info["paths"][0], self.customer_LBL_info["size"])
+        self.costumer_lbl_rect = self.customer_LBL_img.get_rect(topright=(SCREEN_WIDTH, 100))
         self.clock = pg.time.Clock()
-        self.font = pg.font.SysFont(None, 50)
+        self.font = pg.font.Font(FONT, 30)
         
         # Save the starting tick time for countdowns
-        self.timer_start = time.time()
+        if self.game_state.has_interior_ran:
+            # When reentering, use the saved remaining time as the new "initial_time"
+            self.initial_time = self.game_state.ex_remaining_time  
+            # Reset the timer start - pause the old countdown and restart from now.
+            self.timer_start = time.time() 
+            self.game_state.timer_start = self.timer_start  
+        else:
+            self.initial_time = self.game_state.ex_remaining_time  
+            self.timer_start = time.time()
+            self.game_state.timer_start = self.timer_start
 
         self.esc_info = EXT_UI_ELEMENTS["esc_interior"]
         self.esc_ship_img = load_scaled_image(self.esc_info["paths"][0], self.esc_info["size"])
@@ -64,16 +77,28 @@ class Interior:
         self.remaining_distance = self.initial_distance
 
         # ------------------
-        # Add Health UI initialization.
+        # Health UI Initialization.
         self.health_info = EXT_UI_ELEMENTS["health"]
-        # Calculate the current health index using the initial ship health.
         step = 25
         self.health_index = min(len(self.health_info["paths"]) - 1, (150 - self.player_health) // step)
         self.ui_health_img = load_scaled_image(self.health_info["paths"][self.health_index],
                                                self.health_info["size"])
-        # Define a rectangle to blit the health UI image.
         self.ui_health_rect = self.ui_health_img.get_rect(bottomright=(SCREEN_WIDTH // 13.5, SCREEN_HEIGHT - 10))
         # ------------------
+
+        # --- Customer Order UI (Persistent) ---
+        # Ensure that game_state.current_customer is set as a valid file path.
+        if self.game_state.current_customer:
+            self.customer_img = load_scaled_image(self.game_state.current_customer,
+                                                  EXT_UI_ELEMENTS["customers"]["size"])
+        else:
+            self.game_state.current_customer = random.choice(EXT_UI_ELEMENTS["customers"]["paths"])
+            self.customer_img = load_scaled_image(self.game_state.current_customer,
+                                                  EXT_UI_ELEMENTS["customers"]["size"])
+        # Save the customer path locally for easy reference
+        self.customer_path = self.game_state.current_customer
+        # Create a rect for the customer image (e.g., at the top-right corner)
+        self.customer_rect = self.customer_img.get_rect(topright=(SCREEN_WIDTH, 0))
 
         self.update_state()  # Initialize any other states
 
@@ -81,37 +106,26 @@ class Interior:
         """Dynamically update the health UI based on the current player health."""
         max_health = 150
         step = 25
-        # Use the current health from the global state (or from the ship if you prefer)
+        # Use the current health from the global state.
         self.player_health = self.game_state.ex_health
         self.health_index = min(len(self.health_info["paths"]) - 1,
                                 (max_health - self.player_health) // step)
         self.ui_health_img = load_scaled_image(self.health_info["paths"][self.health_index],
                                                self.health_info["size"])
-        # Store the updated values in the global game state
+        # Store health index in global game state.
         self.game_state.ex_health_index = self.health_index
         self.game_state.ex_health_frame = self.health_info["paths"][self.health_index]
 
     def update_state(self):
         """Update the player state, countdown timers and holes dynamically."""
-        # Health is loaded directly from the global state.
         self.player_health = self.game_state.ex_health
-
-        # Update the health UI dynamically
         self.update_ui()
-
         # Calculate elapsed time since the start of the Interior scene.
         elapsed = time.time() - self.timer_start
-
-        # Update remaining time and distance by subtracting elapsed time.
         self.remaining_time = max(0, self.initial_time - elapsed)
-        # For simplicity we assume a rate of 1 unit per second.
         self.remaining_distance = max(0, self.initial_distance - elapsed)
-
-        # Optionally, update the global game state so next scene receives the updated values:
         self.game_state.ex_remaining_time = self.remaining_time
         self.game_state.ex_remaining_dist = self.remaining_distance
-
-        # Update holes if necessary, based on health changes.
         self.update_holes()
 
     def update_holes(self):
@@ -143,7 +157,7 @@ class Interior:
                         self.game_state.current_level = "Exterior"
                         return self.game_state.current_level
                     if e.key == pg.K_SPACE:
-                        # When space is pressed, check if the spaceman is colliding with any hole.
+                        # Check if the spaceman collides with any hole.
                         for hole, hole_rect in self.holes_manager.holes:
                             if hole_rect.colliderect(self.spaceman.rect):
                                 self.game_state.current_level = "MiniGame"
@@ -159,28 +173,28 @@ class Interior:
             self.holes_manager.draw(self.screen)
             self.spaceman.draw(self.screen)
             
-            # Optionally, if a hole collides with the spaceman display the spacebar graphic.
+            # Optionally, display the spacebar graphic if needed.
             for hole, hole_rect in self.holes_manager.holes:
                 if hole_rect.colliderect(self.spaceman.rect):
                     self.screen.blit(self.spacebar_img, self.spacebar_rect)
             
-            # Call update_state() every frame so that time, distance, and health UI update.
             self.update_state()
-
             if self.remaining_time == 0:
                 fail_sfx.play()
                 self.game_over("Assets/images/ui/cold_lose.png", 8000)
                 
-            # Render the remaining time, remaining distance, and (for debugging) health value.
+            # Render debugging texts (time, distance, health).
             time_text = self.font.render(f"Time: {int(self.remaining_time)}", True, (255, 255, 255))
             dist_text = self.font.render(f"Dist: {int(self.remaining_distance)}", True, (255, 255, 255))
             health_text = self.font.render(f"Health: {int(self.player_health)}", True, (255, 255, 255))
             self.screen.blit(time_text, (10, 90))
             self.screen.blit(dist_text, (10, 50))
             self.screen.blit(health_text, (10, 130))
-            
-            # *** Blit the dynamic health UI image (the hearts) ***
+            # Blit the health UI (the hearts).
             self.screen.blit(self.ui_health_img, self.ui_health_rect)
-            
+            # Blit the customer image (persistent order) at its designated location.
+            self.screen.blit(self.customer_LBL_img, self.costumer_lbl_rect)
+            self.screen.blit(self.customer_img, self.customer_rect)
+    
             pg.display.flip()
-            self.clock.tick(60)
+            self.clock.tick(FPS)
