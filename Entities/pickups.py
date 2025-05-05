@@ -1,4 +1,4 @@
-'''import pygame as pg
+import pygame as pg
 import random
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 from sfx import pickup_sfx
@@ -28,11 +28,11 @@ class Pickups:
         self.pickup_list = []
 
         # Load the pickup asset (for example, a pizza boost image).
-        self.asset = load_scaled_image("Assets/images/pizza_box.png", (50, 50))
+        self.asset = load_scaled_image("Assets/images/pizza_box.png", (75, 75))
         
         # Spawn timing, in milliseconds.
-        self.spawn_timer = -1  # Force immediate spawn (for debugging)
-        self.spawn_interval = 2000 #* 5  # Spawn every 2000 ms (2 seconds)
+        self.spawn_timer = 1  # Force immediate spawn (for debugging)
+        self.spawn_interval = 10000 * 5  # Spawn every 2000 ms (2 seconds)
         self.can_spawn = True
 
     def spawn(self, count=1):
@@ -101,4 +101,4 @@ class Pickups:
         Updates the pickup's amount parameter dynamically.
         Use this method if you want to change how much the pickup affects the ship.
         """
-        self.amount = new_amount'''
+        self.amount = new_amount

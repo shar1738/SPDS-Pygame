@@ -24,7 +24,7 @@ class Asteroids:
 
         self.asteroid_list = []
         self.spawn_timer = 0
-        self.spawn_interval = 150
+        self.spawn_interval = 185
         self.is_inv = IS_INV
         self.inv_timer = 0
         self.can_spawn = True
@@ -80,8 +80,8 @@ class Asteroids:
 
         for a in self.asteroid_list:
             # Move left; faster if ship is boosting
-            speed_factor = 1.5 if getattr(ship, 'is_boosting', False) else 1.0
-            a["pos"][0] -= a["speed"] * speed_factor
+            self.speed_factor = 1.5 if getattr(ship, 'is_boosting', False) else 1.0
+            a["pos"][0] -= a["speed"] * self.speed_factor
 
             asteroid_mask = pg.mask.from_surface(a["image"])
             asteroid_rect = a["image"].get_rect(topleft=(int(a["pos"][0]), int(a["pos"][1])))

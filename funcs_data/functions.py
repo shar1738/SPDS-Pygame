@@ -22,3 +22,10 @@ class Animation:
 
     def get_current_frame(self) -> pg.Surface:
         return self.frames[self.current_frame]
+
+    def reset(self):
+        """
+        Reset the animation back to the first frame and restart timing.
+        """
+        self.current_frame = 0
+        self.last_update = time.time()

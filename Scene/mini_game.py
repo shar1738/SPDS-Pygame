@@ -54,7 +54,7 @@ class MiniGame:
         self.sealant_surface = pg.Surface(screen_size, pg.SRCALPHA)
 
         # Sealant brush settings
-        self.brush_radius = 25
+        self.brush_radius = 35
         self.brush_color = (165, 227, 141)
 
         self.mouse_down = False
