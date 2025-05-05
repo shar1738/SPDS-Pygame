@@ -1,6 +1,6 @@
 import pygame as pg
 import random
-from sfx import collision_sfx
+from sfx import collision_sfx, ship_boost_sfx
 from funcs_data.functions import Animation
 from funcs_data.data import ASTEROID_CONFIG, ASTEROID_SIZE
 import settings as S
@@ -24,7 +24,7 @@ class Asteroids:
 
         self.asteroid_list = []
         self.spawn_timer = 0
-        self.spawn_interval = 175
+        self.spawn_interval = 150
         self.is_inv = IS_INV
         self.inv_timer = 0
         self.can_spawn = True
@@ -94,6 +94,8 @@ class Asteroids:
             if ship.mask.overlap(asteroid_mask, offset):
                 if not self.is_inv:
                     ship.take_damage(DAMAGE_AMOUNT)
+                    ship_boost_sfx.stop()
+                    ship.is_boosting = False
                     ship.is_damaged = True
                     ship.damage_timer = 0.5
                     collision_sfx.play()

@@ -16,7 +16,7 @@ from game_state import GameState
 # =================== CONFIGURATION & CONSTANTS ===================
 DISTANCE_RATE = 5
 INI_DISTANCE = 0
-START_TIME = random.randint(60, 100)
+START_TIME = random.randint(100, 180)
 PIZZA_SPEED = 200
 
 ship_boost_sfx.set_volume(0.008)
@@ -57,7 +57,7 @@ class Exterior:
         else:
             # First-run (or no Interior update): assign default values.
             self.player_health = self.player_ship.player_health
-            self.distance = random.randint(500, 1000)
+            self.distance = random.randint(600, 1000)
             self.game_state.ex_health = self.player_health
             self.game_state.ex_distance = self.distance
             self.health_info = EXT_UI_ELEMENTS["health"]
@@ -161,6 +161,7 @@ class Exterior:
                 self.game_over("Assets/images/ui/cold_lose.png", 2000)
 
     def game_over(self, path, delay):
+        song.stop()
         game_over_img = pg.image.load(path).convert_alpha()
         rect = game_over_img.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(game_over_img, rect.topleft)
