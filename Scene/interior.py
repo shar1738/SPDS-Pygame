@@ -6,7 +6,7 @@ from Entities.spaceman import Spaceman
 from Entities.holes import Holes
 from funcs_data.data import EXT_UI_ELEMENTS
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FONT, FPS
-from sfx import fail_sfx
+from sfx import fail_sfx, song
 
 def load_scaled_image(path, size):
     """Safely loads and scales an image."""
@@ -136,6 +136,7 @@ class Interior:
             self.holes_manager = Holes(amount=self.hole_count, interior_rect=self.interior_rect)
     
     def game_over(self, path, delay=2000):
+        song.stop()
         game_over_img = pg.image.load(path).convert_alpha()
         rect = game_over_img.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(game_over_img, rect.topleft)

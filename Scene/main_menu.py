@@ -1,5 +1,6 @@
 import pygame as pg
 from Scene.exterior import Exterior
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 from game_state import GameState
 import sys
 
@@ -20,7 +21,7 @@ class MainMenu:
         pg.init()
 
         info = pg.display.Info()
-        self.screen_width, self.screen_height = info.current_w, info.current_h
+        self.screen_width, self.screen_height = SCREEN_WIDTH, SCREEN_HEIGHT
 
         self.screen = pg.display.set_mode(
             (self.screen_width, self.screen_height), pg.RESIZABLE
@@ -57,6 +58,7 @@ class MainMenu:
             new_size = (int(orig_w * scale_factor), int(orig_h * scale_factor))
             img = pg.transform.scale(orig, new_size)
             scaled_images[name] = img
+        
 
         current_y = container_y
         self.buttons = {}

@@ -1,10 +1,10 @@
 import pygame as pg
 import sys
 import random
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, FONT
 from game_state import GameState
 import time 
-from sfx import gooing_sfx
+from sfx import gooing_sfx, song, fail_sfx
 from funcs_data.data import EXT_UI_ELEMENTS  # Make sure EXT_UI_ELEMENTS is imported
 
 def load_scaled_image(path, size):
@@ -60,7 +60,7 @@ class MiniGame:
         self.mouse_down = False
         self.hole_filled = False
         self.threshold_fill_percent = 0.99
-        self.font = pg.font.SysFont(None, 48)
+        self.font = pg.font.Font(FONT, 48)
 
     def get_fill_percentage(self):
         hole_alpha = pg.surfarray.pixels_alpha(self.hole)
@@ -89,6 +89,16 @@ class MiniGame:
         self.holes = self.game_state.holes
         elapsed = time.time() - self.timer_start
         self.remaining_time = max(0, self.time - elapsed)
+    
+    def game_over(self, path, delay=2000):
+        song.stop()
+        game_over_img = pg.image.load(path).convert_alpha()
+        rect = game_over_img.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+        self.screen.blit(game_over_img, rect.topleft)
+        pg.display.flip()
+        pg.time.delay(delay)
+        pg.quit()
+        sys.exit()
 
     def run(self):
         while True:
@@ -141,7 +151,10 @@ class MiniGame:
             timer_text = self.font.render(f"Time: {int(self.remaining_time)}", True, (0,0,0))
             self.screen.blit(timer_text, (10, 50))
 
-            # When the hole is filled, update state and exit MiniGame.
+            if self.remaining_time == 0:
+                fail_sfx.play()
+                self.game_over("Assets/images/ui/cold_lose.png", 8000)
+
             if self.hole_filled:
                 self.screen.blit(self.sealed_img, self.sealed_rect)
                 pg.display.flip()

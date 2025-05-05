@@ -6,7 +6,7 @@ import sys
 import time
 
 from Entities.ship import Ship
-from Entities.asteroids import Asteroids, IS_INV
+from Entities.asteroids import Asteroids
 from funcs_data.data import EXT_UI_ELEMENTS
 from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT, FONT
 from sfx import ship_basic_sfx, ship_boost_sfx, yay_sfx, fail_sfx, song
@@ -158,7 +158,8 @@ class Exterior:
             elapsed = time.time() - self.timer_start
             self.remaining_time = max(0, self.rand_time - elapsed)
             if self.remaining_time == 0:
-                self.game_over("Assets/images/ui/cold_lose.png", 2000)
+                fail_sfx.play()
+                self.game_over("Assets/images/ui/cold_lose.png", 8000)
 
     def game_over(self, path, delay):
         song.stop()

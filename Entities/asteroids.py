@@ -94,8 +94,8 @@ class Asteroids:
             if ship.mask.overlap(asteroid_mask, offset):
                 if not self.is_inv:
                     ship.take_damage(DAMAGE_AMOUNT)
-                    ship_boost_sfx.stop()
                     ship.is_boosting = False
+                    ship_boost_sfx.stop()
                     ship.is_damaged = True
                     ship.damage_timer = 0.5
                     collision_sfx.play()
