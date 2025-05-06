@@ -43,9 +43,11 @@ class Exterior:
         self.player_ship = Ship(150, 300)
         self.override_img = load_scaled_image("Assets/images/ship/basic_ship.png", (200, 200))
         self.override_img2 = load_scaled_image("Assets/images/ship/hyper_plasma_extreme.png", (200, 200))
+        self.asteroids = Asteroids()
         
         # --- CUSTOMER SELECTION & TIMER SETUP ---
         if self.game_state.has_interior_ran:
+            self.asteroids.spawn_center = True
             self.player_health = self.game_state.ex_health
             self.player_ship.player_health = self.game_state.ex_health
             self.distance = self.game_state.ex_remaining_dist
@@ -78,10 +80,8 @@ class Exterior:
                                             (SCREEN_WIDTH, SCREEN_HEIGHT))
         
         # --- ASTEROIDS & GAME ELEMENTS ---
-        self.is_inv = False
         self.hole_shown = False
         self.hole_start_time = None
-        self.asteroids = Asteroids()
         self.asteroids.spawn_rand(5)
 
         # --- UI - DELIVERY & PIZZA ---
@@ -126,7 +126,7 @@ class Exterior:
             bottomleft=(self.ui_health_rect.right + 10, SCREEN_HEIGHT - 50))
 
         # --- PICKUPS (pizza boost) ---
-        self.pickups = Pickups(move_speed=5, effect="increase", amount=0)
+        self.pickups = Pickups(move_speed=7, effect="increase", amount=0)
         self.pickup_active = False
         self.pickup_start = 0
         self.pickup_duration = 5.0  # seconds
@@ -178,7 +178,7 @@ class Exterior:
                 if e.type == pg.QUIT:
                     pg.quit()
                     sys.exit()
-                elif e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
+                elif e.type == pg.KEYDOWN and self.player_health < 150 and e.key == pg.K_ESCAPE:
                     max_h = 150
                     step = 25
                     self.holes = (max_h - self.player_health) // step
@@ -211,11 +211,13 @@ class Exterior:
             base_rate = DISTANCE_RATE * (2 if self.player_ship.is_boosting else 1)
             boost = self.pickup_active and (time.time() - self.pickup_start) < self.pickup_duration
             if boost:
+                self.asteroids.inv_timer = 60 * 4.5
+                self.asteroids.is_inv = True
                 rate = base_rate * 4
                 self.player_ship.set_override_image(self.override_img2, 0.70)
                 self.player_ship.is_boosting
-                ship_boost_sfx.play()
             else:
+                self.asteroids.inv_timer = 120
                 rate = base_rate
                 if self.pickup_active:
                     self.pickup_active = False
@@ -226,11 +228,13 @@ class Exterior:
                 if not self.show_delivery:
                     self.show_delivery = True
 
-            self.player_health = self.player_ship.player_health
+            if self.player_health == 0:
+                fail_sfx.play()
+                self.game_over("Assets/images/ui/game_over.png", 8000)
+
 
             # --- ASTEROIDS UPDATE & INVINCIBILITY ---
             if boost:
-                orig_health = self.player_ship.player_health
                 # extra movement for 5× speed
                 for a in self.asteroids.asteroid_list:
                     a["pos"][0] -= a["speed"] * 3
@@ -243,9 +247,6 @@ class Exterior:
             self.player_ship.draw(self.screen)
             self.pickups.draw(self.screen)
             self.asteroids.update_and_draw(self.screen, self.player_ship)
-            if boost:
-                # restore health so ship remains invincible
-                self.player_ship.player_health = orig_health
 
             self.screen.blit(self.ui_health_img, self.ui_health_rect)
             self.screen.blit(self.ui_nitro_img, self.ui_nitro_rect)

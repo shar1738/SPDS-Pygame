@@ -7,7 +7,6 @@ import settings as S
 
 IS_INV = False
 ASTEROID_SIZE = ASTEROID_SIZE
-INV_DURATION_FRAMES = 120  # 2 seconds at 60 FPS
 DAMAGE_AMOUNT = 25
 
 collision_sfx.set_volume(0.5)
@@ -26,15 +25,20 @@ class Asteroids:
         self.spawn_timer = 0
         self.spawn_interval = 185
         self.is_inv = IS_INV
-        self.inv_timer = 0
+        self.inv_timer = 180
         self.can_spawn = True
+
+        # New attributes for center spawning
+        self.spawn_center = False
+        self.center_spawn_amt = 35
+        self.center_spawned = False
 
     def calc_right(self):
         """Return the rightmost off-screen spawn position for asteroids."""
         return S.SCREEN_WIDTH + ASTEROID_SIZE[0]
 
     def spawn_rand(self, amount=1):
-        """Spawn a random number of asteroids."""
+        """Spawn a random number of asteroids off-screen to the right."""
         for _ in range(amount):
             name, data = random.choice(list(self.assets.items()))
             img = data["image"]
@@ -76,6 +80,33 @@ class Asteroids:
             if self.inv_timer <= 0:
                 self.is_inv = False
 
+        # One-time spawn of 50 asteroids in center of screen if enabled
+        if self.spawn_center and not self.center_spawned:
+            self.center_spawned = True
+            safe_rect = pg.Rect(150, 300, 50, 50)  # Area around player to avoid
+
+            for _ in range(self.center_spawn_amt):
+                name, data = random.choice(list(self.assets.items()))
+                img = data["image"]
+                offset = data["hitbox_offset"]
+
+                while True:
+                    x = random.randint(600, S.SCREEN_WIDTH - img.get_width())  # Avoid left 400px
+                    y = random.randint(0, S.SCREEN_HEIGHT - img.get_height())
+                    asteroid_rect = pg.Rect(x, y, img.get_width(), img.get_height())
+                    if not asteroid_rect.colliderect(safe_rect):
+                        break
+                self.spawn_center = False
+
+                speed = random.uniform(3, 5)
+
+                self.asteroid_list.append({
+                    "image": img,
+                    "pos": [x, y],
+                    "speed": speed,
+                    "hitbox_offset": offset,
+                })
+
         to_remove = []
 
         for a in self.asteroid_list:
@@ -99,9 +130,11 @@ class Asteroids:
                     ship.is_damaged = True
                     ship.damage_timer = 0.5
                     collision_sfx.play()
-
                     self.is_inv = True
-                    self.inv_timer = INV_DURATION_FRAMES
+                else:
+                    self.is_inv = False
+                    
+                    
 
                 to_remove.append(a)
                 continue

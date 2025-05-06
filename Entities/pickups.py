@@ -31,8 +31,8 @@ class Pickups:
         self.asset = load_scaled_image("Assets/images/pizza_box.png", (75, 75))
         
         # Spawn timing, in milliseconds.
-        self.spawn_timer = 1  # Force immediate spawn (for debugging)
-        self.spawn_interval = 10000 * 5  # Spawn every 2000 ms (2 seconds)
+        self.spawn_timer = 15000  # Force immediate spawn (for debugging)
+        self.spawn_interval = 15000  # Spawn every 2000 ms (2 seconds)
         self.can_spawn = True
 
     def spawn(self, count=1):
