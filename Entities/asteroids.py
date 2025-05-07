@@ -23,7 +23,7 @@ class Asteroids:
 
         self.asteroid_list = []
         self.spawn_timer = 0
-        self.spawn_interval = S.SCREEN_HEIGHT // 9
+        self.spawn_interval = S.SCREEN_HEIGHT // 7
         self.is_inv = IS_INV
         self.inv_timer = 60 * 5
         self.can_spawn = True
