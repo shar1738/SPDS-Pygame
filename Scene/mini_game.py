@@ -144,7 +144,7 @@ class MiniGame:
             # Health UI rendered based on the global game_state health index.
             health_img = load_scaled_image(EXT_UI_ELEMENTS["health"]["paths"][self.game_state.ex_health_index],
                                         EXT_UI_ELEMENTS["health"]["size"])
-            health_rect = health_img.get_rect(bottomright=(SCREEN_WIDTH // 13.5, SCREEN_HEIGHT - 10))
+            health_rect = health_img.get_rect(bottomright=(SCREEN_WIDTH * 1.5/10, SCREEN_HEIGHT * 9.999/10))
             self.screen.blit(health_img, health_rect)
             
             # Render timer text using the updated self.remaining_time value.

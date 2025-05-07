@@ -6,6 +6,7 @@ from sfx import song
 
 class Main:
     def __init__(self):
+        
         pg.init()
         pg.mixer.init()
         song.set_volume(0.05)

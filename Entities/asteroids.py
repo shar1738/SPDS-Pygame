@@ -23,14 +23,14 @@ class Asteroids:
 
         self.asteroid_list = []
         self.spawn_timer = 0
-        self.spawn_interval = 185
+        self.spawn_interval = S.SCREEN_HEIGHT // 9
         self.is_inv = IS_INV
-        self.inv_timer = 180
+        self.inv_timer = 60 * 5
         self.can_spawn = True
 
         # New attributes for center spawning
         self.spawn_center = False
-        self.center_spawn_amt = 35
+        self.center_spawn_amt = S.SCREEN_HEIGHT // 50  # Number of asteroids to spawn in center
         self.center_spawned = False
 
     def calc_right(self):
@@ -125,12 +125,12 @@ class Asteroids:
             if ship.mask.overlap(asteroid_mask, offset):
                 if not self.is_inv:
                     ship.take_damage(DAMAGE_AMOUNT)
+                    self.is_inv = True
                     ship.is_boosting = False
                     ship_boost_sfx.stop()
                     ship.is_damaged = True
                     ship.damage_timer = 0.5
                     collision_sfx.play()
-                    self.is_inv = True
                 else:
                     self.is_inv = False
                     

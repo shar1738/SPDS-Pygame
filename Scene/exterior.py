@@ -85,8 +85,10 @@ class Exterior:
         self.asteroids.spawn_rand(5)
 
         # --- UI - DELIVERY & PIZZA ---
+        # --- UI - DELIVERY & PIZZA ---
         self.delivered_img = pg.image.load("Assets/images/ui/garage_(delivered).png").convert_alpha()
-        self.delivered_rect = self.delivered_img.get_rect(topright=(SCREEN_WIDTH + 1500, 0))
+        self.delivered_img = pg.transform.scale(self.delivered_img, (SCREEN_WIDTH * 8/10, SCREEN_HEIGHT * 8/10))
+        self.delivered_rect = self.delivered_img.get_rect(topleft=(SCREEN_WIDTH - 200, 0))  # Align to the right dynamically
         self.show_delivery = False
         self.raw_pizza = pg.image.load("Assets/images/pizza_box.png").convert_alpha()
         self.pizza_img = pg.transform.scale(self.raw_pizza, (128, 128))
@@ -113,17 +115,17 @@ class Exterior:
         self.hole_img = load_scaled_image(self.hole_info["paths"][0],
                                           self.hole_info["size"])
         self.customer_rect = self.customer_img.get_rect(topright=(SCREEN_WIDTH, 0))
-        self.costumer_lbl_rect = self.customer_LBL_img.get_rect(topright=(SCREEN_WIDTH, 100))
+        self.costumer_lbl_rect = self.customer_LBL_img.get_rect(topright=(SCREEN_WIDTH * 9.9999/10, SCREEN_HEIGHT * 1/10))
         self.esc_ship_rect = self.esc_ship_img.get_rect(bottomright=(SCREEN_WIDTH - 10,
                                                                      SCREEN_HEIGHT - 10))
         self.hole_rect = self.hole_img.get_rect(center=(SCREEN_WIDTH // 2,
                                                         SCREEN_HEIGHT // 2))
         self.ui_health_rect = load_scaled_image(
             self.health_info["paths"][self.health_index],
-            self.health_info["size"]).get_rect(bottomleft=(10, SCREEN_HEIGHT - 10))
+            self.health_info["size"]).get_rect(bottomleft=(SCREEN_WIDTH * .1/10, SCREEN_HEIGHT * 9.999/10))
         self.ui_nitro_rect = load_scaled_image(
             self.nitro_info["paths"][0], self.nitro_info["size"]).get_rect(
-            bottomleft=(self.ui_health_rect.right + 10, SCREEN_HEIGHT - 50))
+            bottomleft=(self.ui_health_rect.right + 10, SCREEN_HEIGHT * 9.999/10))
 
         # --- PICKUPS (pizza boost) ---
         self.pickups = Pickups(move_speed=7, effect="increase", amount=0)
@@ -211,8 +213,8 @@ class Exterior:
             base_rate = DISTANCE_RATE * (2 if self.player_ship.is_boosting else 1)
             boost = self.pickup_active and (time.time() - self.pickup_start) < self.pickup_duration
             if boost:
-                self.asteroids.inv_timer = 60 * 4.5
                 self.asteroids.is_inv = True
+                self.asteroids.inv_timer = 60 * 4
                 rate = base_rate * 4
                 self.player_ship.set_override_image(self.override_img2, 0.70)
                 self.player_ship.is_boosting
@@ -260,7 +262,7 @@ class Exterior:
 
             if self.show_delivery:
                 # door slide
-                if self.delivered_rect.right>SCREEN_WIDTH:
+                if self.delivered_rect.right > SCREEN_WIDTH:
                     self.delivered_rect.x -= 200*dt
                 self.screen.blit(self.delivered_img,self.delivered_rect)
                 # pizza fly
@@ -269,7 +271,7 @@ class Exterior:
                     self.pizza_rect=self.pizza_img.get_rect(center=ship_c)
                     self.pizza_spawned=True
                 if self.pizza_spawned:
-                    tx,ty=SCREEN_WIDTH-700,SCREEN_HEIGHT-500
+                    tx,ty=SCREEN_WIDTH * 6/10,SCREEN_HEIGHT * 7/10
                     px,py=self.pizza_rect.center; dx,dy=tx-px,ty-py
                     dist=(dx*dx)**0.5
                     if dist>5:

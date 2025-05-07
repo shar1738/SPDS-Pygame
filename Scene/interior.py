@@ -26,13 +26,13 @@ class Interior:
         self.interior_image = load_scaled_image("Assets/images/interior.png", (SCREEN_WIDTH, SCREEN_HEIGHT))
         self.interior_rect = self.interior_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         # Inflating the interior_rect to define an interactive area
-        self.interior_rect = self.interior_rect.inflate(-400, -300)
-        self.interior_rect.y -= 95  
-        self.interior_rect.x += 30
+        self.interior_rect = self.interior_rect.inflate(SCREEN_WIDTH * -1/4, SCREEN_HEIGHT * -1/3)
+        self.interior_rect.y -= SCREEN_HEIGHT * .7/10
+        self.interior_rect.x += SCREEN_WIDTH * .4/10
 
         self.customer_LBL_info = EXT_UI_ELEMENTS["costumer_label"]
         self.customer_LBL_img = load_scaled_image(self.customer_LBL_info["paths"][0], self.customer_LBL_info["size"])
-        self.costumer_lbl_rect = self.customer_LBL_img.get_rect(topright=(SCREEN_WIDTH, 100))
+        self.costumer_lbl_rect = self.customer_LBL_img.get_rect(topright=(SCREEN_WIDTH * 9.9999/10, SCREEN_HEIGHT * 1/10))
         self.clock = pg.time.Clock()
         self.font = pg.font.Font(FONT, 30)
         
@@ -83,7 +83,7 @@ class Interior:
         self.health_index = min(len(self.health_info["paths"]) - 1, (150 - self.player_health) // step)
         self.ui_health_img = load_scaled_image(self.health_info["paths"][self.health_index],
                                                self.health_info["size"])
-        self.ui_health_rect = self.ui_health_img.get_rect(bottomright=(SCREEN_WIDTH // 13.5, SCREEN_HEIGHT - 10))
+        self.ui_health_rect = self.ui_health_img.get_rect(bottomright=(SCREEN_WIDTH * 1.5/10, SCREEN_HEIGHT * 9.999/10))
         # ------------------
 
         # --- Customer Order UI (Persistent) ---
@@ -123,7 +123,6 @@ class Interior:
         # Calculate elapsed time since the start of the Interior scene.
         elapsed = time.time() - self.timer_start
         self.remaining_time = max(0, self.initial_time - elapsed)
-        self.remaining_distance = max(0, self.initial_distance - elapsed)
         self.game_state.ex_remaining_time = self.remaining_time
         self.game_state.ex_remaining_dist = self.remaining_distance
         self.update_holes()
@@ -190,7 +189,6 @@ class Interior:
             health_text = self.font.render(f"Health: {int(self.player_health)}", True, (255, 255, 255))
             self.screen.blit(time_text, (10, 90))
             self.screen.blit(dist_text, (10, 50))
-            self.screen.blit(health_text, (10, 130))
             # Blit the health UI (the hearts).
             self.screen.blit(self.ui_health_img, self.ui_health_rect)
             # Blit the customer image (persistent order) at its designated location.
