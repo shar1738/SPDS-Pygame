@@ -6,9 +6,9 @@ from funcs_data.data import IS_DAMAGED, BASIC_ANIMATION, BOOST_ANIMATION, DAMAGE
 from sfx import ship_boost_sfx
 
 # Constants
-THRUST_POWER       = 0.3
+THRUST_POWER       = 0.4
 FRICTION           = 0.97
-ROTATION_SPEED     = 3
+ROTATION_SPEED     = 4
 MAX_ANGLE          = 60  # degrees up and down
 SCALE_FACTOR       = 2
 

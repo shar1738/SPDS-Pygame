@@ -17,10 +17,10 @@ from Entities.pickups import Pickups  # Pickup manager
 # =================== CONFIGURATION & CONSTANTS ===================
 DISTANCE_RATE = 5
 INI_DISTANCE = 0
-START_TIME = random.randint(180, 240)
+START_TIME = random.randint(185, 285)
 PIZZA_SPEED = 200
 
-ship_boost_sfx.set_volume(0.008)
+ship_boost_sfx.set_volume(0.05)
 fail_sfx.set_volume(0.5)
 ship_basic_sfx.set_volume(0.3)
 song.set_volume(0.15)
@@ -85,10 +85,9 @@ class Exterior:
         self.asteroids.spawn_rand(5)
 
         # --- UI - DELIVERY & PIZZA ---
-        # --- UI - DELIVERY & PIZZA ---
         self.delivered_img = pg.image.load("Assets/images/ui/garage_(delivered).png").convert_alpha()
         self.delivered_img = pg.transform.scale(self.delivered_img, (SCREEN_WIDTH * 8/10, SCREEN_HEIGHT * 8/10))
-        self.delivered_rect = self.delivered_img.get_rect(topleft=(SCREEN_WIDTH - 200, 0))  # Align to the right dynamically
+        self.delivered_rect = self.delivered_img.get_rect(topleft=(SCREEN_WIDTH - 200, 0))
         self.show_delivery = False
         self.raw_pizza = pg.image.load("Assets/images/pizza_box.png").convert_alpha()
         self.pizza_img = pg.transform.scale(self.raw_pizza, (128, 128))
@@ -106,29 +105,42 @@ class Exterior:
         self.font = pg.font.Font(FONT, 30)
 
         # --- STATIC IMAGES & RECTS ---
-        self.ui_health_img = load_scaled_image(self.health_info["paths"][0],
-                                               self.health_info["size"])
+        # Pre-cache health and nitro images
+        self.health_imgs = [
+            load_scaled_image(path, self.health_info["size"])
+            for path in self.health_info["paths"]
+        ]
+        self.nitro_imgs = [
+            load_scaled_image(path, self.nitro_info["size"])
+            for path in self.nitro_info["paths"]
+        ]
+        # Cached hole image
+        self.hole_img = load_scaled_image(
+            self.hole_info["paths"][0], self.hole_info["size"]
+        )
+
+        # Initial UI images
+        self.ui_health_img = self.health_imgs[self.health_index]
+        self.ui_health_rect = self.ui_health_img.get_rect(bottomleft=(SCREEN_WIDTH * .1/10, SCREEN_HEIGHT * 9.999/10))
+        self.ui_nitro_img = self.nitro_imgs[0]
+        self.ui_nitro_rect = self.ui_nitro_img.get_rect(
+            bottomleft=(self.ui_health_rect.right + 10, SCREEN_HEIGHT * 9.999/10)
+        )
+
+        # Customer and ESC ship images & rects
         self.customer_LBL_img = load_scaled_image(self.customer_LBL_info["paths"][0],
                                                   self.customer_LBL_info["size"])
         self.esc_ship_img = load_scaled_image(self.esc_info["paths"][0],
                                               self.esc_info["size"])
-        self.hole_img = load_scaled_image(self.hole_info["paths"][0],
-                                          self.hole_info["size"])
         self.customer_rect = self.customer_img.get_rect(topright=(SCREEN_WIDTH, 0))
-        self.costumer_lbl_rect = self.customer_LBL_img.get_rect(topright=(SCREEN_WIDTH * 9.9999/10, SCREEN_HEIGHT * 1/10))
+        self.customer_lbl_rect = self.customer_LBL_img.get_rect(topright=(SCREEN_WIDTH * 1.014, SCREEN_HEIGHT // 12))
         self.esc_ship_rect = self.esc_ship_img.get_rect(bottomright=(SCREEN_WIDTH - 10,
                                                                      SCREEN_HEIGHT - 10))
         self.hole_rect = self.hole_img.get_rect(center=(SCREEN_WIDTH // 2,
                                                         SCREEN_HEIGHT // 2))
-        self.ui_health_rect = load_scaled_image(
-            self.health_info["paths"][self.health_index],
-            self.health_info["size"]).get_rect(bottomleft=(SCREEN_WIDTH * .1/10, SCREEN_HEIGHT * 9.999/10))
-        self.ui_nitro_rect = load_scaled_image(
-            self.nitro_info["paths"][0], self.nitro_info["size"]).get_rect(
-            bottomleft=(self.ui_health_rect.right + 10, SCREEN_HEIGHT * 9.999/10))
 
         # --- PICKUPS (pizza boost) ---
-        self.pickups = Pickups(move_speed=7, effect="increase", amount=0)
+        self.pickups = Pickups(move_speed=12, effect="increase", amount=0)
         self.pickup_active = False
         self.pickup_start = 0
         self.pickup_duration = 5.0  # seconds
@@ -141,13 +153,11 @@ class Exterior:
         step = 25
         self.health_index = min(len(self.health_info["paths"]) - 1,
                                 (max_health - self.player_health) // step)
-        self.ui_health_img = load_scaled_image(self.health_info["paths"][self.health_index],
-                                               self.health_info["size"])
+        # Use cached UI images
+        self.ui_health_img = self.health_imgs[self.health_index]
+        self.ui_nitro_img = self.nitro_imgs[1 if self.player_ship.is_boosting else 0]
         self.game_state.ex_health_index = self.health_index
         self.game_state.ex_health_frame = self.health_info["paths"][self.health_index]
-        self.ui_nitro_img = load_scaled_image(
-            self.nitro_info["paths"][1 if self.player_ship.is_boosting else 0],
-            self.nitro_info["size"])
         # Timer update
         if self.distance > 0:
             elapsed = time.time() - self.timer_start
@@ -208,18 +218,16 @@ class Exterior:
             if after < before:
                 self.pickup_active = True
                 self.pickup_start = time.time()
-
+            
             # --- DISTANCE RATE & BOOST LOGIC ---
             base_rate = DISTANCE_RATE * (2 if self.player_ship.is_boosting else 1)
             boost = self.pickup_active and (time.time() - self.pickup_start) < self.pickup_duration
             if boost:
                 self.asteroids.is_inv = True
-                self.asteroids.inv_timer = 60 * 4
                 rate = base_rate * 4
                 self.player_ship.set_override_image(self.override_img2, 0.70)
                 self.player_ship.is_boosting
             else:
-                self.asteroids.inv_timer = 120
                 rate = base_rate
                 if self.pickup_active:
                     self.pickup_active = False
@@ -229,17 +237,15 @@ class Exterior:
                 self.asteroids.can_spawn = False
                 if not self.show_delivery:
                     self.show_delivery = True
-
+            
             if self.player_health == 0:
                 fail_sfx.play()
                 self.game_over("Assets/images/ui/game_over.png", 8000)
-
-
-            # --- ASTEROIDS UPDATE & INVINCIBILITY ---
+            
             if boost:
                 # extra movement for 5× speed
                 for a in self.asteroids.asteroid_list:
-                    a["pos"][0] -= a["speed"] * 3
+                    a["pos"][0] -= a["speed"] * 5
                 self.asteroids.update(dt_ms)
             else:
                 self.asteroids.update(dt_ms)
@@ -248,17 +254,28 @@ class Exterior:
             self.screen.blit(self.background, (0, 0))
             self.player_ship.draw(self.screen)
             self.pickups.draw(self.screen)
-            self.asteroids.update_and_draw(self.screen, self.player_ship)
+            self.asteroids.update_and_draw(self.screen, self.player_ship, dt_ms)
 
             self.screen.blit(self.ui_health_img, self.ui_health_rect)
             self.screen.blit(self.ui_nitro_img, self.ui_nitro_rect)
             self.screen.blit(self.customer_img, self.customer_rect)
-            self.screen.blit(self.customer_LBL_img, self.costumer_lbl_rect)
-            time_text = self.font.render(f"Time: {int(self.remaining_time)}", True, (255, 255, 255))
-            self.screen.blit(time_text, (10, 40))
+            self.screen.blit(self.customer_LBL_img, self.customer_lbl_rect)
             self.screen.blit(self.esc_ship_img, self.esc_ship_rect)
-            dist_text = f"Distance to customer: {int(self.distance)}"
-            self.screen.blit(self.font.render(dist_text, True, (255, 255, 255)), (10, 10))
+            time_text = self.font.render(f"Time: {int(self.remaining_time)}", True, (255, 255, 255))
+            target_w = SCREEN_WIDTH  // 15
+            target_h = SCREEN_HEIGHT // 35
+            scaled_time_text = pg.transform.smoothscale(time_text, (target_w, target_h))
+            self.screen.blit(scaled_time_text, (10, 40))
+
+            # 1) Create the raw text surface
+            dist_surf = self.font.render(
+                f"Distance to customer: {int(self.distance)}", True, (255, 255, 255))
+            target_w = SCREEN_WIDTH  // 4
+            target_h = SCREEN_HEIGHT // 35
+
+            scaled_dist_surf = pg.transform.smoothscale(dist_surf, (target_w, target_h))
+
+            self.screen.blit(scaled_dist_surf, (10, 10))
 
             if self.show_delivery:
                 # door slide
@@ -286,7 +303,7 @@ class Exterior:
                         self.game_over("Assets/images/ui/win_ui.png",3000)
 
             if self.hole_shown and time.time()-self.hole_start_time<3:
-                self.screen.blit(load_scaled_image(self.hole_info["paths"][0],self.hole_info["size"]), self.hole_rect)
+                self.screen.blit(self.hole_img, self.hole_rect)
 
             pg.display.flip()
 

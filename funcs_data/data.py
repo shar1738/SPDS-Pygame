@@ -1,12 +1,12 @@
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
-ASTEROID_SIZE = (50,50)
+ASTEROID_SIZE = (SCREEN_WIDTH // 30 , SCREEN_HEIGHT // 30)
 IS_DAMAGED = False
 
 DAMAGE_ANIMATION = {
     "paths": [
         "Assets/images/ship/ship_damage.png"
     ],
-    "size": (100, 100),
+    "size": (SCREEN_WIDTH // 18, SCREEN_HEIGHT // 12.5),
     "speed": 0.01,
 }
 
@@ -18,8 +18,8 @@ BASIC_ANIMATION = {
         "Assets/images/ship/fire_large.png",
         "Assets/images/ship/fire_colossal.png",
     ],
-    "size":  (100, 100),
-    "speed": 0.15,
+    "size":  (SCREEN_WIDTH // 18, SCREEN_HEIGHT // 12.5),
+    "speed": 0.1,
 }
 
 BOOST_ANIMATION = {
@@ -35,7 +35,7 @@ BOOST_ANIMATION = {
         "Assets/images/ship/hyper_plasma_extreme.png",
         "Assets/images/ship/hyper_plasma_extreme.png",
     ],
-    "size":  (100, 100),
+    "size":  (SCREEN_WIDTH // 18, SCREEN_HEIGHT // 12.5),
     "speed": 0.5,
 }
 
@@ -51,7 +51,7 @@ ASTEROID_CONFIG = {
 EXT_UI_ELEMENTS = {
     "customers": {
         "paths": [f"Assets/images/ui/costumer{i}.png" for i in range(1, 7)],
-        "size": (SCREEN_WIDTH * 1.28/10, SCREEN_HEIGHT * 1.28/10)
+        "size": (SCREEN_WIDTH // 10, SCREEN_HEIGHT // 10)
     },
     "pizza_timer": {
         "paths": [
@@ -63,18 +63,18 @@ EXT_UI_ELEMENTS = {
     },
     "health": {
         "paths": [f"Assets/images/ui/a_{i}h.png" for i in range(1, 8)],
-        "size": (SCREEN_WIDTH * 1.28/10, SCREEN_HEIGHT * 1.4/10)
+        "size": (SCREEN_WIDTH // 10, SCREEN_HEIGHT // 10)
     },
     "nitro": {
         "paths": [
             "Assets/images/ui/nitro_locked.png",
             "Assets/images/ui/nitro_unlocked.png"
         ],
-        "size": (SCREEN_WIDTH * 1.28/10, SCREEN_HEIGHT * 1.28/10)
+        "size": (SCREEN_WIDTH // 10, SCREEN_HEIGHT // 10)
     },
     "costumer_label": {
         "paths": ["Assets/images/ui/costumer_label.png"],
-        "size": (SCREEN_WIDTH * 1.4/10, SCREEN_HEIGHT * 1.4/10)
+        "size": (SCREEN_WIDTH // 8, SCREEN_HEIGHT // 8)
     },
     "esc_ship": {
         "paths": ["Assets/images/ship/escape_interior.png"],
@@ -94,7 +94,7 @@ EXT_UI_ELEMENTS = {
     },
     'space': {
         'paths': ['Assets/images/ui/press_space.png'],
-        'size': (SCREEN_WIDTH * 2.54/10, SCREEN_HEIGHT * 2.54/10)
+        'size': (SCREEN_WIDTH * 2.54/10, SCREEN_HEIGHT * 2.6/10)
     }
 
 }

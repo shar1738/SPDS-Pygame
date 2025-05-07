@@ -18,6 +18,8 @@ class GameState:
         # Customer persistence (store image path instead of object reference)
         self.current_customer = random.choice(EXT_UI_ELEMENTS["customers"]["paths"])
         self.holes = None
+        self.hole_positions = None
+        self.spaceman_position = None
 
         # Scene tracking
         self.current_level = "Exterior"  # "Exterior", "Interior", or "MiniGame"

@@ -12,7 +12,6 @@ def load_scaled_image(path, size):
     try:
         return pg.transform.scale(pg.image.load(path).convert_alpha(), size)
     except Exception as e:
-        print(f"Error loading {path}: {e}")
         return pg.Surface(size)  # Returns a blank surface if loading fails
 
 class MiniGame:
@@ -147,9 +146,11 @@ class MiniGame:
             health_rect = health_img.get_rect(bottomright=(SCREEN_WIDTH * 1.5/10, SCREEN_HEIGHT * 9.999/10))
             self.screen.blit(health_img, health_rect)
             
-            # Render timer text using the updated self.remaining_time value.
-            timer_text = self.font.render(f"Time: {int(self.remaining_time)}", True, (0,0,0))
-            self.screen.blit(timer_text, (10, 50))
+            time_text = self.font.render(f"Time: {int(self.remaining_time)}", True, (0, 0, 0))
+            target_w = SCREEN_WIDTH  // 15
+            target_h = SCREEN_HEIGHT // 35
+            scaled_time_text = pg.transform.smoothscale(time_text, (target_w, target_h))
+            self.screen.blit(scaled_time_text, (10, 40))
 
             if self.remaining_time == 0:
                 fail_sfx.play()
@@ -167,7 +168,6 @@ class MiniGame:
                                 (max_health - self.game_state.ex_health) // step)
                 self.game_state.ex_health_index = new_index
                 self.game_state.ex_health_frame = EXT_UI_ELEMENTS["health"]["paths"][new_index]
-                print("Global ex_health:", self.game_state.ex_health)
                 self.game_state.holes -= 1
 
                 # SYNC TIME: Update the global remaining time based on the mini-game countdown.

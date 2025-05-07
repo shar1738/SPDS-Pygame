@@ -1,5 +1,6 @@
 import pygame as pg
 from funcs_data.functions import Animation
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 
 SPACEMAN_MOVE_ANIMATION = {
     "paths": [
@@ -7,7 +8,7 @@ SPACEMAN_MOVE_ANIMATION = {
         "Assets/images/spaceman/spaceman2.png",
         "Assets/images/spaceman/spaceman3.png",
     ],
-    "size":  (200, 200),
+    "size":  (SCREEN_WIDTH // 7, SCREEN_HEIGHT // 7),
     "speed": 0.3,
 }
 

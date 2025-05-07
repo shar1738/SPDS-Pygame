@@ -4,8 +4,8 @@ from sfx import collision_sfx, ship_boost_sfx
 from funcs_data.functions import Animation
 from funcs_data.data import ASTEROID_CONFIG, ASTEROID_SIZE
 import settings as S
+import time
 
-IS_INV = False
 ASTEROID_SIZE = ASTEROID_SIZE
 DAMAGE_AMOUNT = 25
 
@@ -20,17 +20,17 @@ class Asteroids:
             }
             for name, cfg in ASTEROID_CONFIG.items()
         }
-
         self.asteroid_list = []
         self.spawn_timer = 0
-        self.spawn_interval = S.SCREEN_HEIGHT // 7
-        self.is_inv = IS_INV
-        self.inv_timer = 60 * 5
+        self.spawn_interval = S.SCREEN_HEIGHT // 6.5
+        self.is_inv = False
+        self.inv_duration = 3.5  # Invincibility lasts 5 seconds
+        self.is_inv_start = None  # When invincibility started
         self.can_spawn = True
 
         # New attributes for center spawning
         self.spawn_center = False
-        self.center_spawn_amt = S.SCREEN_HEIGHT // 50  # Number of asteroids to spawn in center
+        self.center_spawn_amt = S.SCREEN_HEIGHT // 60  # Number of asteroids to spawn in center
         self.center_spawned = False
 
     def calc_right(self):
@@ -46,7 +46,7 @@ class Asteroids:
 
             x = self.calc_right()
             y = random.randint(0, S.SCREEN_HEIGHT - img.get_height())
-            speed = random.uniform(3, 5)
+            speed = random.uniform(7, 15)
 
             self.asteroid_list.append({
                 "image": img,
@@ -66,8 +66,8 @@ class Asteroids:
         if self.spawn_timer <= 0 and self.can_spawn:
             self.spawn_timer += self.spawn_interval
             self.spawn_rand(1)
-
-    def update_and_draw(self, screen, ship):
+        
+    def update_and_draw(self, screen, ship, dt_ms):
         """
         Move asteroids, check collisions with the ship, draw them,
         and clean up those that go off-screen or collide.
@@ -75,15 +75,20 @@ class Asteroids:
         if pg.display.get_surface() is None:
             return
 
+        # Check if the invincibility period is over.
         if self.is_inv:
-            self.inv_timer -= 1
-            if self.inv_timer <= 0:
+            if self.is_inv_start is None:
+                # Lazy initialization in case it hasn't been set
+                self.is_inv_start = time.time()
+            elapsed_time = time.time() - self.is_inv_start
+            if elapsed_time >= self.inv_duration:
                 self.is_inv = False
+                self.is_inv_start = None
 
-        # One-time spawn of 50 asteroids in center of screen if enabled
+        # One-time spawn of center asteroids if enabled
         if self.spawn_center and not self.center_spawned:
             self.center_spawned = True
-            safe_rect = pg.Rect(150, 300, 50, 50)  # Area around player to avoid
+            safe_rect = pg.Rect(150, 300, 50, 50)  # Safe area around player
 
             for _ in range(self.center_spawn_amt):
                 name, data = random.choice(list(self.assets.items()))
@@ -91,7 +96,7 @@ class Asteroids:
                 offset = data["hitbox_offset"]
 
                 while True:
-                    x = random.randint(600, S.SCREEN_WIDTH - img.get_width())  # Avoid left 400px
+                    x = random.randint(600, S.SCREEN_WIDTH - img.get_width())
                     y = random.randint(0, S.SCREEN_HEIGHT - img.get_height())
                     asteroid_rect = pg.Rect(x, y, img.get_width(), img.get_height())
                     if not asteroid_rect.colliderect(safe_rect):
@@ -99,7 +104,6 @@ class Asteroids:
                 self.spawn_center = False
 
                 speed = random.uniform(3, 5)
-
                 self.asteroid_list.append({
                     "image": img,
                     "pos": [x, y],
@@ -110,41 +114,42 @@ class Asteroids:
         to_remove = []
 
         for a in self.asteroid_list:
-            # Move left; faster if ship is boosting
+            # Move the asteroid left; speed up if the ship is boosting
             self.speed_factor = 1.5 if getattr(ship, 'is_boosting', False) else 1.0
             a["pos"][0] -= a["speed"] * self.speed_factor
 
             asteroid_mask = pg.mask.from_surface(a["image"])
             asteroid_rect = a["image"].get_rect(topleft=(int(a["pos"][0]), int(a["pos"][1])))
 
+            # Calculate offset for collision detection
             offset = (
                 asteroid_rect.left - ship.rect.left,
                 asteroid_rect.top - ship.rect.top
             )
 
+            # Check collision with the ship
             if ship.mask.overlap(asteroid_mask, offset):
                 if not self.is_inv:
-                    ship.take_damage(DAMAGE_AMOUNT)
                     self.is_inv = True
+                    self.is_inv_start = time.time()  # Record when invincibility starts
+                    # Damage the ship only on first collision that triggers invincibility
+                    ship.take_damage(DAMAGE_AMOUNT)
                     ship.is_boosting = False
                     ship_boost_sfx.stop()
                     ship.is_damaged = True
                     ship.damage_timer = 0.5
                     collision_sfx.play()
-                else:
-                    self.is_inv = False
-                    
-                    
-
                 to_remove.append(a)
                 continue
 
-            if asteroid_rect.right < 0:
+            # Check if the asteroid has moved completely off-screen to the left.
+            if a["pos"][0] + a["image"].get_width() < 0:
                 to_remove.append(a)
                 continue
 
             screen.blit(a["image"], (int(a["pos"][0]), int(a["pos"][1])))
 
+        # Remove asteroids that collided or moved off-screen.
         for a in to_remove:
             if a in self.asteroid_list:
                 self.asteroid_list.remove(a)
