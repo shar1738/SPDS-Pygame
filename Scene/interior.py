@@ -84,7 +84,6 @@ class Interior:
         )
         # Persist hole positions
         self.game_state.hole_positions = list(self.holes_manager.hole_positions)
-        print(f"Initial holes: {self.hole_count}")
 
         # Time & distance initialization
         self.initial_distance = (
