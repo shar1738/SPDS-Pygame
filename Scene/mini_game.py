@@ -6,6 +6,7 @@ from game_state import GameState
 import time 
 from sfx import gooing_sfx, song, fail_sfx
 from funcs_data.data import EXT_UI_ELEMENTS  # Make sure EXT_UI_ELEMENTS is imported
+from Entities.holes import Holes
 
 def load_scaled_image(path, size):
     """Safely loads and scales an image."""
@@ -25,7 +26,8 @@ class MiniGame:
         self.screen = pg.display.set_mode(screen_size)
         pg.display.set_caption("Seal the Hole")
         self.clock = pg.time.Clock()
-        self.timer_start = time.time()   
+        self.timer_start = time.time()
+        
 
         # Load and scale background image
         bg_img = pg.image.load("Assets/images/minigame/cockpit_wall.png").convert_alpha()
@@ -175,7 +177,7 @@ class MiniGame:
 
                 gooing_sfx.set_volume(0)
                 pg.time.delay(1000)
-                
+
                 self.game_state.current_level = 'Interior'
                 return self.game_state.current_level
 

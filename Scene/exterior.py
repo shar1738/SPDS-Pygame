@@ -17,7 +17,7 @@ from Entities.pickups import Pickups  # Pickup manager
 # =================== CONFIGURATION & CONSTANTS ===================
 DISTANCE_RATE = 5
 INI_DISTANCE = 0
-START_TIME = random.randint(185, 285)
+START_TIME = random.randint(240, 285)
 PIZZA_SPEED = 200
 
 ship_boost_sfx.set_volume(0.05)

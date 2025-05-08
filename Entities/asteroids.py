@@ -22,7 +22,7 @@ class Asteroids:
         }
         self.asteroid_list = []
         self.spawn_timer = 0
-        self.spawn_interval = S.SCREEN_HEIGHT // 6.5
+        self.spawn_interval = S.SCREEN_HEIGHT // 6
         self.is_inv = False
         self.inv_duration = 3.5  # Invincibility lasts 5 seconds
         self.is_inv_start = None  # When invincibility started
