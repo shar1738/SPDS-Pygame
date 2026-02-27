@@ -1,5 +1,5 @@
 import pygame as pg
-from Scene.exterior import Exterior
+from Code.Scenes.exterior import Exterior
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 from game_state import GameState
 import sys

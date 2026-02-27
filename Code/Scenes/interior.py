@@ -4,9 +4,8 @@ import time
 import random
 from Entities.spaceman import Spaceman
 from Entities.holes import Holes
-from funcs_data.data import EXT_UI_ELEMENTS
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FONT, FPS
-from sfx import fail_sfx, song
+import Code.Funcs_data.asset_data as asset_data
 
 def load_scaled_image(path, size):
     """Safely loads and scales an image."""
@@ -29,13 +28,12 @@ class Interior:
         self.interior_rect.y -= SCREEN_HEIGHT * 0.07
         self.interior_rect.x += SCREEN_WIDTH * 0.04
 
-        self.customer_LBL_info = EXT_UI_ELEMENTS["costumer_label"]
+        self.customer_LBL_info = asset_data.EXT_UI_ELEMENTS["costumer_label"]
         self.customer_LBL_img = load_scaled_image(
-            self.customer_LBL_info["paths"][0], self.customer_LBL_info["size"]
-        )
+            self.customer_LBL_info["paths"][0], self.customer_LBL_info["size"])
+        
         self.customer_lbl_rect = self.customer_LBL_img.get_rect(
-            topright=(SCREEN_WIDTH * 1.014, SCREEN_HEIGHT // 12)
-        )
+            topright=(SCREEN_WIDTH * 1.014, SCREEN_HEIGHT // 12))
 
         self.clock = pg.time.Clock()
         self.font = pg.font.Font(FONT, 30)
@@ -45,23 +43,22 @@ class Interior:
         self.timer_start = time.time()
         self.game_state.timer_start = self.timer_start
 
-        self.esc_info = EXT_UI_ELEMENTS["esc_interior"]
+        self.esc_info = asset_data.EXT_UI_ELEMENTS["esc_interior"]
         self.esc_ship_img = load_scaled_image(
-            self.esc_info["paths"][0], self.esc_info["size"]
-        )
+            self.esc_info["paths"][0], self.esc_info["size"])
+        
         self.esc_ship_rect = self.esc_ship_img.get_rect(
-            bottomright=(SCREEN_WIDTH - 10, SCREEN_HEIGHT - 10)
-        )
+            bottomright=(SCREEN_WIDTH - 10, SCREEN_HEIGHT - 10))
 
         self.health = self.game_state.ex_health
 
-        self.space_info = EXT_UI_ELEMENTS["space"]
+        self.space_info = asset_data.EXT_UI_ELEMENTS["space"]
         self.spacebar_img = load_scaled_image(
-            self.space_info["paths"][0], self.space_info["size"]
-        )
+            self.space_info["paths"][0], self.space_info["size"])
+        
         self.spacebar_rect = self.spacebar_img.get_rect(
-            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-        )
+            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+        
 
         # --- Load Spaceman and Holes ---
         # Restore spaceman position if saved
@@ -80,41 +77,40 @@ class Interior:
             Holes.hole_positions = self.game_state.hole_positions
         self.holes_manager = Holes(
             amount=self.hole_count,
-            interior_rect=self.interior_rect
-        )
+            interior_rect=self.interior_rect)
+        
         # Persist hole positions
         self.game_state.hole_positions = list(self.holes_manager.hole_positions)
 
         # Time & distance initialization
         self.initial_distance = (
             self.game_state.ex_remaining_dist
-            if self.game_state.ex_remaining_dist is not None else 500
-        )
+            if self.game_state.ex_remaining_dist is not None else 500)
+        
         self.remaining_time = self.initial_time
         self.remaining_distance = self.initial_distance
 
         # Health UI
-        self.health_info = EXT_UI_ELEMENTS["health"]
+        self.health_info = asset_data.EXT_UI_ELEMENTS["health"]
         step = 25
         self.health_index = min(
             len(self.health_info["paths"]) - 1,
-            (150 - self.player_health) // step
-        )
+            (150 - self.player_health) // step)
+        
         self.ui_health_img = load_scaled_image(
             self.health_info["paths"][self.health_index],
-            self.health_info["size"]
-        )
+            self.health_info["size"])
+        
         self.ui_health_rect = self.ui_health_img.get_rect(
-            bottomright=(SCREEN_WIDTH * 0.15, SCREEN_HEIGHT * 0.9999)
-        )
+            bottomright=(SCREEN_WIDTH * 0.15, SCREEN_HEIGHT * 0.9999))
 
         # Customer UI
         if self.game_state.current_customer:
             path = self.game_state.current_customer
         else:
-            path = random.choice(EXT_UI_ELEMENTS["customers"]["paths"])
+            path = random.choice(asset_data.EXT_UI_ELEMENTS["customers"]["paths"])
             self.game_state.current_customer = path
-        self.customer_img = load_scaled_image(path, EXT_UI_ELEMENTS["customers"]["size"])
+        self.customer_img = load_scaled_image(path, asset_data.EXT_UI_ELEMENTS["customers"]["size"])
         self.customer_path = path
         self.customer_rect = self.customer_img.get_rect(topright=(SCREEN_WIDTH, 0))
 
@@ -125,12 +121,12 @@ class Interior:
         self.player_health = self.game_state.ex_health
         self.health_index = min(
             len(self.health_info["paths"]) - 1,
-            (max_health - self.player_health) // step
-        )
+            (max_health - self.player_health) // step)
+        
         self.ui_health_img = load_scaled_image(
             self.health_info["paths"][self.health_index],
-            self.health_info["size"]
-        )
+            self.health_info["size"])
+        
         self.game_state.ex_health_index = self.health_index
         self.game_state.ex_health_frame = self.health_info["paths"][self.health_index]
 
@@ -139,8 +135,8 @@ class Interior:
         self.update_ui()
         self.remaining_time = max(
             0,
-            self.initial_time - (time.time() - self.timer_start)
-        )
+            self.initial_time - (time.time() - self.timer_start))
+        
         self.game_state.ex_remaining_time = self.remaining_time
         self.game_state.ex_remaining_dist = self.remaining_distance
         self.update_holes()
@@ -160,7 +156,7 @@ class Interior:
         self.game_state.hole_positions = list(self.holes_manager.hole_positions)
 
     def game_over(self, path, delay=2000):
-        song.stop()
+        asset_data.song.stop()
         img = pg.image.load(path).convert_alpha()
         rect = img.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(img, rect.topleft)
@@ -172,24 +168,29 @@ class Interior:
     def run(self):
         while True:
             for e in pg.event.get():
+
                 if e.type == pg.QUIT:
                     pg.quit()
                     sys.exit()
-                if e.type == pg.KEYDOWN:
+
+                elif e.type == pg.KEYDOWN:
+
                     if e.key == pg.K_ESCAPE:
                         self.game_state.has_interior_ran = True
                         self.game_state.current_level = "Exterior"
-                        return self.game_state.current_level
-                    if e.key == pg.K_SPACE:
-                        for hole, hole_rect in self.holes_manager.holes:
-                            if hole_rect.colliderect(self.spaceman.rect):
-                                # Save spaceman pos on minigame entry
-                                self.game_state.spaceman_pos = (
-                                    self.spaceman.rect.x,
-                                    self.spaceman.rect.y
-                                )
-                                self.game_state.current_level = "MiniGame"
-                                return self.game_state.current_level
+                        return "Exterior"
+
+                    elif e.key == pg.K_SPACE:
+                        if any(
+                            hole_rect.colliderect(self.spaceman.rect)
+                            for _, hole_rect in self.holes_manager.holes):
+                            
+                            self.game_state.spaceman_pos = (
+                                self.spaceman.rect.x,
+                                self.spaceman.rect.y,)
+                            
+                            self.game_state.current_level = "MiniGame"
+                            return "MiniGame"
 
             keys = pg.key.get_pressed()
             self.spaceman.update(keys)
@@ -206,27 +207,27 @@ class Interior:
 
             self.update_state()
             if self.remaining_time == 0:
-                fail_sfx.play()
+                asset_data.fail_sfx.play()
                 self.game_over("Assets/images/ui/cold_lose.png", 8000)
 
             time_text = self.font.render(
-                f"Time: {int(self.remaining_time)}", True, (255, 255, 255)
-            )
+                f"Time: {int(self.remaining_time)}", True, (255, 255, 255))
+            
             target_w = SCREEN_WIDTH // 15
             target_h = SCREEN_HEIGHT // 35
             scaled_time_text = pg.transform.smoothscale(
-                time_text, (target_w, target_h)
-            )
+                time_text, (target_w, target_h))
+            
             self.screen.blit(scaled_time_text, (10, 40))
 
             dist_surf = self.font.render(
-                f"Distance to customer: {int(self.remaining_distance)}", True, (255, 255, 255)
-            )
+                f"Distance to customer: {int(self.remaining_distance)}", True, (255, 255, 255))
+            
             target_w = SCREEN_WIDTH  // 5
             target_h = SCREEN_HEIGHT // 35
             scaled_dist_surf = pg.transform.smoothscale(
-                dist_surf, (target_w, target_h)
-            )
+                dist_surf, (target_w, target_h))
+            
             self.screen.blit(scaled_dist_surf, (10, 10))
 
             self.screen.blit(self.ui_health_img, self.ui_health_rect)

@@ -5,13 +5,16 @@ import json
 import sys
 import time
 
+from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT, FONT
+from game_state import GameState
+
 from Entities.ship import Ship
 from Entities.asteroids import Asteroids
-from funcs_data.data import EXT_UI_ELEMENTS
-from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT, FONT
-from sfx import ship_basic_sfx, ship_boost_sfx, yay_sfx, fail_sfx, song
-from game_state import GameState
-from Entities.pickups import Pickups  # Pickup manager
+from Entities.pickups import Pickups 
+
+import Code.Funcs_data.asset_data as asset_data
+
+ # Pickup manager
 
 
 # =================== CONFIGURATION & CONSTANTS ===================
@@ -20,10 +23,10 @@ INI_DISTANCE = 0
 START_TIME = random.randint(240, 285)
 PIZZA_SPEED = 200
 
-ship_boost_sfx.set_volume(0.05)
-fail_sfx.set_volume(0.5)
-ship_basic_sfx.set_volume(0.3)
-song.set_volume(0.15)
+asset_data.ship_boost_sfx.set_volume(0.05)
+asset_data.fail_sfx.set_volume(0.5)
+asset_data.ship_basic_sfx.set_volume(0.3)
+asset_data.song.set_volume(0.15)
 
 
 # =================== HELPER FUNCTIONS ===================
@@ -37,7 +40,7 @@ class Exterior:
         # Init Pygame and Mixer
         pg.init()
         pg.mixer.init()
-        self.ship_basic_sfx = ship_basic_sfx
+        self.ship_basic_sfx = asset_data.ship_basic_sfx
         self.clock = pg.time.Clock()
         self.game_state = game_state
         self.player_ship = Ship(150, 300)
@@ -61,17 +64,17 @@ class Exterior:
             self.distance = random.randint(750, 1500)
             self.game_state.ex_health = self.player_health
             self.game_state.ex_distance = self.distance
-            self.health_info = EXT_UI_ELEMENTS["health"]
+            self.health_info = asset_data.EXT_UI_ELEMENTS["health"]
             self.health_index = min(len(self.health_info["paths"]) - 1,
                                     (150 - self.player_health) // 25)
             self.rand_time = START_TIME
             self.timer_start = time.time()
             self.game_state.timer_start = self.timer_start
-            customer_path = random.choice(EXT_UI_ELEMENTS["customers"]["paths"])
+            customer_path = random.choice(asset_data.EXT_UI_ELEMENTS["customers"]["paths"])
             self.game_state.current_customer = customer_path
         self.customer_path = customer_path
         self.customer_img = load_scaled_image(self.customer_path,
-                                              EXT_UI_ELEMENTS["customers"]["size"])
+                                              asset_data.EXT_UI_ELEMENTS["customers"]["size"])
 
         # --- SCREEN & BACKGROUND ---
         pg.display.set_caption("S.P.D.S")
@@ -97,11 +100,11 @@ class Exterior:
         self.pizza_rect = None
 
         # --- UI ELEMENTS ---
-        self.health_info = EXT_UI_ELEMENTS["health"]
-        self.nitro_info = EXT_UI_ELEMENTS["nitro"]
-        self.customer_LBL_info = EXT_UI_ELEMENTS["costumer_label"]
-        self.esc_info = EXT_UI_ELEMENTS["esc_ship"]
-        self.hole_info = EXT_UI_ELEMENTS["hole"]
+        self.health_info = asset_data.EXT_UI_ELEMENTS["health"]
+        self.nitro_info = asset_data.EXT_UI_ELEMENTS["nitro"]
+        self.customer_LBL_info = asset_data.EXT_UI_ELEMENTS["costumer_label"]
+        self.esc_info = asset_data.EXT_UI_ELEMENTS["esc_ship"]
+        self.hole_info = asset_data.EXT_UI_ELEMENTS["hole"]
         self.font = pg.font.Font(FONT, 30)
 
         # --- STATIC IMAGES & RECTS ---
@@ -163,11 +166,11 @@ class Exterior:
             elapsed = time.time() - self.timer_start
             self.remaining_time = max(0, self.rand_time - elapsed)
             if self.remaining_time == 0:
-                fail_sfx.play()
+                asset_data.fail_sfx.play()
                 self.game_over("Assets/images/ui/cold_lose.png", 8000)
 
     def game_over(self, path, delay):
-        song.stop()
+        asset_data.song.stop()
         game_over_img = pg.image.load(path).convert_alpha()
         rect = game_over_img.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(game_over_img, rect.topleft)
@@ -239,7 +242,7 @@ class Exterior:
                     self.show_delivery = True
             
             if self.player_health == 0:
-                fail_sfx.play()
+                asset_data.fail_sfx.play()
                 self.game_over("Assets/images/ui/game_over.png", 8000)
             
             if boost:
@@ -299,7 +302,7 @@ class Exterior:
                         self.screen.blit(pg.transform.rotate(self.pizza_img,self.pizza_angle),self.pizza_rect)
                     else:
                         self.screen.blit(pg.transform.rotate(self.pizza_img,self.pizza_angle),self.pizza_rect)
-                        yay_sfx.play()
+                        asset_data.yay_sfx.play()
                         self.game_over("Assets/images/ui/win_ui.png",3000)
 
             if self.hole_shown and time.time()-self.hole_start_time<3:
