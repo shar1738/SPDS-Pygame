@@ -1,7 +1,18 @@
 import pygame as pg
 import time
-from funcs_data.data import EXT_UI_ELEMENTS
-import random 
+import random
+import Code.Scenes.exterior as Exterior
+import Code.Scenes.interior as Interior
+import Code.Scenes.main_menu as MainMenu
+import Code.Scenes.mini_game as MiniGame
+from Code.Funcs_data.asset_data import EXT_UI_ELEMENTS 
+
+SCENES = {
+    "Exterior": Exterior,
+    "MainMenu": MainMenu,
+    "Interior": Interior,
+    "MiniGame": MiniGame,
+}
 
 class GameState:
     def __init__(self):
@@ -44,3 +55,4 @@ class GameState:
     def update_customer(self, new_customer_path):
         """Ensures customer image path is preserved across scenes."""
         self.current_customer = new_customer_path
+
