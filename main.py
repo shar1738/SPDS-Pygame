@@ -1,8 +1,8 @@
 import pygame as pg
 import settings as S
-from funcs_data.scene_manager import SCENES
-from game_state import GameState
-from sfx import song
+from Code.Scenes import game_state as GameState 
+from Code.Scenes.scene_manager import SCENES
+from Code.Funcs_data.sfx import song 
 
 class Main:
     def __init__(self):

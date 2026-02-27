@@ -1,3 +1,4 @@
+import pygame as pg
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 ASTEROID_SIZE = (SCREEN_WIDTH // 30 , SCREEN_HEIGHT // 30)
 IS_DAMAGED = False
@@ -97,3 +98,13 @@ EXT_UI_ELEMENTS = {
     }
 
 }
+
+collision_sfx = pg.mixer.Sound("Assets/sfx/explosion.mp3") 
+ship_basic_sfx = pg.mixer.Sound("Assets/sfx/ship_basic.mp3") 
+ship_boost_sfx = pg.mixer.Sound("Assets/sfx/ship_boost.wav")
+yay_sfx = pg.mixer.Sound("Assets/sfx/YAY.mp3")
+fail_sfx = pg.mixer.Sound("Assets/sfx/failed.mp3")
+alarm_sfx = pg.mixer.Sound("Assets/sfx/alarm.mp3")
+gooing_sfx = pg.mixer.Sound("Assets/sfx/gooing.mp3")
+song = pg.mixer.Sound("Assets/sfx/song.mp3")
+pickup_sfx = pg.mixer.Sound("Assets/sfx/powerUP.wav")
