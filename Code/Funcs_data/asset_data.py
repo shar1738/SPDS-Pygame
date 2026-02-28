@@ -35,7 +35,7 @@ EXT_UI_ELEMENTS = {
         "size": (SCREEN_WIDTH // 8, SCREEN_HEIGHT // 8),
     },
     "esc_ship": {
-        "paths": ["Assets/images/objects/ship/escape_interior.PNG"],
+        "paths": ["Assets/images/objects/ship/escape_interior.png"],
         "size": (SCREEN_WIDTH * 1.54 / 10, SCREEN_HEIGHT * 1.54 / 10),
     },
     "hole": {
@@ -65,10 +65,10 @@ DAMAGE_ANIMATION = {
 
 BASIC_ANIMATION = {
     "paths": [
-        "Assets/images/objects/ship/fire_mini.PNG",
-        "Assets/images/objects/ship/fire_small.PNG",
-        "Assets/images/objects/ship/fire_medium.PNG",
-        "Assets/images/objects/ship/fire_large.PNG",
+        "Assets/images/objects/ship/fire_mini.png",
+        "Assets/images/objects/ship/fire_small.png",
+        "Assets/images/objects/ship/fire_medium.png",
+        "Assets/images/objects/ship/fire_large.png",
         "Assets/images/objects/ship/fire_colossal.png",
     ],
     "size": (SCREEN_WIDTH // 18, SCREEN_HEIGHT // 12.5),
@@ -77,16 +77,16 @@ BASIC_ANIMATION = {
 
 BOOST_ANIMATION = {
     "paths": [
-        "Assets/images/objects/ship/hyper_plasma.PNG",
-        "Assets/images/objects/ship/hyper_plasma.PNG",
-        "Assets/images/objects/ship/hyper_plasma.PNG",
-        "Assets/images/objects/ship/hyper_plasma_extreme.PNG",
-        "Assets/images/objects/ship/hyper_plasma_extreme.PNG",
-        "Assets/images/objects/ship/hyper_plasma_extreme.PNG",
-        "Assets/images/objects/ship/hyper_plasma_extreme.PNG",
-        "Assets/images/objects/ship/hyper_plasma_extreme.PNG",
-        "Assets/images/objects/ship/hyper_plasma_extreme.PNG",
-        "Assets/images/objects/ship/hyper_plasma_extreme.PNG",
+        "Assets/images/objects/ship/hyper_plasma.png",
+        "Assets/images/objects/ship/hyper_plasma.png",
+        "Assets/images/objects/ship/hyper_plasma.png",
+        "Assets/images/objects/ship/hyper_plasma_extreme.png",
+        "Assets/images/objects/ship/hyper_plasma_extreme.png",
+        "Assets/images/objects/ship/hyper_plasma_extreme.png",
+        "Assets/images/objects/ship/hyper_plasma_extreme.png",
+        "Assets/images/objects/ship/hyper_plasma_extreme.png",
+        "Assets/images/objects/ship/hyper_plasma_extreme.png",
+        "Assets/images/objects/ship/hyper_plasma_extreme.png",
     ],
     "size": (SCREEN_WIDTH // 18, SCREEN_HEIGHT // 12.5),
     "speed": 0.5,
@@ -132,6 +132,8 @@ ASTEROID_CONFIG = {
 }
 
 # SFX
+pg.mixer.init()
+pickup_sfx = pg.mixer.Sound("Assets/sfx/power_up.wav")
 collision_sfx = pg.mixer.Sound("Assets/sfx/explosion.mp3")
 ship_basic_sfx = pg.mixer.Sound("Assets/sfx/ship_basic.mp3")
 ship_boost_sfx = pg.mixer.Sound("Assets/sfx/ship_boost.wav")
@@ -140,4 +142,4 @@ fail_sfx = pg.mixer.Sound("Assets/sfx/failed.mp3")
 alarm_sfx = pg.mixer.Sound("Assets/sfx/alarm.mp3")
 gooing_sfx = pg.mixer.Sound("Assets/sfx/gooing.mp3")
 song = pg.mixer.Sound("Assets/sfx/song.mp3")
-pickup_sfx = pg.mixer.Sound("Assets/sfx/powerUP.wav")
+

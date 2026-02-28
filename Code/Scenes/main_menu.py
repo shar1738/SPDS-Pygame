@@ -17,9 +17,7 @@ class MainMenu:
 
     def __init__(self, game_state):
         self.game_state = game_state
-        pg.init()
-
-        info = pg.display.Info()
+        
         self.screen_width, self.screen_height = SCREEN_WIDTH, SCREEN_HEIGHT
 
         self.screen = pg.display.set_mode(
@@ -77,11 +75,6 @@ class MainMenu:
                 if event.type == pg.QUIT:
                     pg.quit()
                     sys.exit()
-                elif event.type == pg.VIDEORESIZE:
-                    self.screen_width, self.screen_height = event.w, event.h
-                    self.screen = pg.display.set_mode(
-                        (self.screen_width, self.screen_height), pg.RESIZABLE
-                    )
                     self.update_layout()
                 elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
                     mouse_pos = event.pos

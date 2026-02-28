@@ -13,7 +13,7 @@ class Main:
         song.set_volume(0.05)
 
         pg.display.set_caption("S.P.D.S")
-        self.screen = pg.display.set_mode((S.SCREEN_WIDTH, S.SCREEN_HEIGHT))
+        self.screen = pg.display.set_mode((S.SCREEN_WIDTH, S.SCREEN_HEIGHT), pg.RESIZABLE)
         self.clock = pg.time.Clock()
         self.game_state = GameState()  # Shared state object
         # Ensure the game state has a valid starting level:

@@ -1,14 +1,16 @@
 import sys
-import time 
+import time
 import random
 import pygame as pg
 
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, FONT
+
 # from sfx import gooing_sfx, song, fail_sfx
 # from funcs_data.data import EXT_UI_ELEMENTS  # Make sure EXT_UI_ELEMENTS is imported
 from Code.Entities.holes import Holes
 
 import Code.Funcs_data.asset_data as asset_data
+
 
 def load_scaled_image(path, size):
     """Safely loads and scales an image."""
@@ -17,45 +19,53 @@ def load_scaled_image(path, size):
     except Exception as e:
         return pg.Surface(size)  # Returns a blank surface if loading fails
 
+
 class MiniGame:
     def __init__(self, game_state):
-        pg.init()
         pg.mixer.init()
         self.game_state = game_state
-        screen_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.screen_width, self.screen_height = screen_size
-
-        self.screen = pg.display.set_mode(screen_size)
+        self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pg.display.set_caption("Seal the Hole")
         self.clock = pg.time.Clock()
         self.timer_start = time.time()
-        
 
         # Load and scale background image
-        bg_img = pg.image.load("Assets/images/interior/minigame/cockpit_wall.png").convert_alpha()
-        self.background = pg.transform.scale(bg_img, screen_size)
+        bg_img = pg.image.load(
+            "Assets/images/interior/minigame/cockpit_wall.png"
+        ).convert_alpha()
+        self.background = pg.transform.scale(bg_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
-        sealed_img = pg.image.load("Assets/images/interior/minigame/hole_sealed.png").convert_alpha()
+        sealed_img = pg.image.load(
+            "Assets/images/interior/minigame/hole_sealed.png"
+        ).convert_alpha()
         self.sealed_img = pg.transform.scale(sealed_img, (254, 254))
-        self.sealed_rect = self.sealed_img.get_rect(center=(self.screen_width // 2, int(self.screen_height // 2)))
+        self.sealed_rect = self.sealed_img.get_rect(
+            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+        )
 
-        sealer_img = pg.image.load("Assets/images/interior/minigame/goon_sealant.png").convert_alpha()
+        sealer_img = pg.image.load(
+            "Assets/images/interior/minigame/goon_sealant.png"
+        ).convert_alpha()
         self.sealer_img = pg.transform.scale(sealer_img, (254, 254))
         self.sealer_rect = self.sealer_img.get_rect()
 
-        self.hole_paths = ['Assets/images/interior/minigame/hole1.png',
-                            'Assets/images/interior/minigame/hole2.png',
-                            'Assets/images/interior/minigame/hole3.png',
-                            'Assets/images/interior/minigame/hole4.png']
-        
+        self.hole_paths = [
+            "Assets/images/interior/minigame/hole1.png",
+            "Assets/images/interior/minigame/hole2.png",
+            "Assets/images/interior/minigame/hole3.png",
+            "Assets/images/interior/minigame/hole4.png",
+        ]
+
         # Load and scale random hole image
         random_hole_path = random.choice(self.hole_paths)
         original_hole = pg.image.load(random_hole_path).convert_alpha()
         self.hole = pg.transform.scale(original_hole, (254, 254))
-        self.hole_rect = self.hole.get_rect(center=(self.screen_width // 2, self.screen_height // 2))
+        self.hole_rect = self.hole.get_rect(
+            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+        )
 
         # Surface to accumulate green circle drawing (sealant)
-        self.sealant_surface = pg.Surface(screen_size, pg.SRCALPHA)
+        self.sealant_surface = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pg.SRCALPHA)
 
         # Sealant brush settings
         self.brush_radius = 35
@@ -78,14 +88,14 @@ class MiniGame:
                 screen_x = self.hole_rect.left + x
                 screen_y = self.hole_rect.top + y
 
-                if 0 <= screen_x < self.screen_width and 0 <= screen_y < self.screen_height:
+                if 0 <= screen_x < SCREEN_WIDTH and 0 <= screen_y < SCREEN_HEIGHT:
                     if hole_alpha[x][y] > 0:
                         total += 1
                         if seal_alpha[screen_x][screen_y] > 0:
                             filled += 1
 
         return filled / total if total > 0 else 0
-    
+
     def update_state(self):
         """Update player state variables and holes dynamically."""
         self.time = self.game_state.ex_remaining_time
@@ -93,7 +103,7 @@ class MiniGame:
         self.holes = self.game_state.holes
         elapsed = time.time() - self.timer_start
         self.remaining_time = max(0, self.time - elapsed)
-    
+
     def game_over(self, path, delay=2000):
         asset_data.song.stop()
         game_over_img = pg.image.load(path).convert_alpha()
@@ -132,12 +142,19 @@ class MiniGame:
             offset_y = 48  # Adjust this value to move it down
             blit_x = mouse_x + offset_x - self.sealer_rect.width // 2
             blit_y = mouse_y + offset_y - self.sealer_rect.height // 2
-            self.screen.blit(self.sealer_img, (blit_x, blit_y))  # Blit at the offset position
+            self.screen.blit(
+                self.sealer_img, (blit_x, blit_y)
+            )  # Blit at the offset position
 
             if self.mouse_down and not self.hole_filled:
                 mouse_pos = pg.mouse.get_pos()
                 if self.hole_rect.collidepoint(mouse_pos):
-                    pg.draw.circle(self.sealant_surface, self.brush_color, mouse_pos, self.brush_radius)
+                    pg.draw.circle(
+                        self.sealant_surface,
+                        self.brush_color,
+                        mouse_pos,
+                        self.brush_radius,
+                    )
 
             if not self.hole_filled:
                 fill_pct = self.get_fill_percentage()
@@ -146,13 +163,21 @@ class MiniGame:
 
             # Render the UI Health and Timer in the MiniGame
             # Health UI rendered based on the global game_state health index.
-            health_img = load_scaled_image(asset_data.EXT_UI_ELEMENTS["health"]["paths"][self.game_state.ex_health_index],
-                                        asset_data.EXT_UI_ELEMENTS["health"]["size"])
-            health_rect = health_img.get_rect(bottomright=(SCREEN_WIDTH * 1.5/10, SCREEN_HEIGHT * 9.999/10))
+            health_img = load_scaled_image(
+                asset_data.EXT_UI_ELEMENTS["health"]["paths"][
+                    self.game_state.ex_health_index
+                ],
+                asset_data.EXT_UI_ELEMENTS["health"]["size"],
+            )
+            health_rect = health_img.get_rect(
+                bottomright=(SCREEN_WIDTH * 1.5 / 10, SCREEN_HEIGHT * 9.999 / 10)
+            )
             self.screen.blit(health_img, health_rect)
-            
-            time_text = self.font.render(f"Time: {int(self.remaining_time)}", True, (0, 0, 0))
-            target_w = SCREEN_WIDTH  // 15
+
+            time_text = self.font.render(
+                f"Time: {int(self.remaining_time)}", True, (0, 0, 0)
+            )
+            target_w = SCREEN_WIDTH // 15
             target_h = SCREEN_HEIGHT // 35
             scaled_time_text = pg.transform.smoothscale(time_text, (target_w, target_h))
             self.screen.blit(scaled_time_text, (10, 40))
@@ -164,15 +189,19 @@ class MiniGame:
             if self.hole_filled:
                 self.screen.blit(self.sealed_img, self.sealed_rect)
                 pg.display.flip()
-                
+
                 # SYNC HEALTH: Add 25 to global ex_health and recalc the health index.
                 self.game_state.ex_health += 25
                 max_health = 150
                 step = 25
-                new_index = min(len(asset_data.EXT_UI_ELEMENTS["health"]["paths"]) - 1,
-                                (max_health - self.game_state.ex_health) // step)
+                new_index = min(
+                    len(asset_data.EXT_UI_ELEMENTS["health"]["paths"]) - 1,
+                    (max_health - self.game_state.ex_health) // step,
+                )
                 self.game_state.ex_health_index = new_index
-                self.game_state.ex_health_frame = asset_data.EXT_UI_ELEMENTS["health"]["paths"][new_index]
+                self.game_state.ex_health_frame = asset_data.EXT_UI_ELEMENTS["health"][
+                    "paths"
+                ][new_index]
                 self.game_state.holes -= 1
 
                 # SYNC TIME: Update the global remaining time based on the mini-game countdown.
@@ -181,7 +210,7 @@ class MiniGame:
                 asset_data.gooing_sfx.set_volume(0)
                 pg.time.delay(1000)
 
-                self.game_state.current_level = 'Interior'
+                self.game_state.current_level = "Interior"
                 return self.game_state.current_level
 
             pg.display.flip()

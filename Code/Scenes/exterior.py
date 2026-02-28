@@ -36,7 +36,6 @@ def load_scaled_image(path, size):
 class Exterior:
     def __init__(self, game_state):
         # Init Pygame and Mixer
-        pg.init()
         pg.mixer.init()
         self.ship_basic_sfx = asset_data.ship_basic_sfx
         self.clock = pg.time.Clock()
