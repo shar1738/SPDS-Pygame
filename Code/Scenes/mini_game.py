@@ -21,11 +21,10 @@ def load_scaled_image(path, size):
 
 
 class MiniGame:
-    def __init__(self, game_state):
+    def __init__(self, game_state, screen):
         pg.mixer.init()
         self.game_state = game_state
-        self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pg.display.set_caption("Seal the Hole")
+        self.screen = screen
         self.clock = pg.time.Clock()
         self.timer_start = time.time()
 
@@ -169,9 +168,9 @@ class MiniGame:
                 ],
                 asset_data.EXT_UI_ELEMENTS["health"]["size"],
             )
-            health_rect = health_img.get_rect(
-                bottomright=(SCREEN_WIDTH * 1.5 / 10, SCREEN_HEIGHT * 9.999 / 10)
-            )
+            health_rect = health_img.get_rect(bottomleft=
+                (asset_data.EXT_UI_ELEMENTS["health"]["position"]))
+            
             self.screen.blit(health_img, health_rect)
 
             time_text = self.font.render(

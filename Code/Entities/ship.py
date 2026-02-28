@@ -176,6 +176,7 @@ class Ship:
         if self.player_health < 0:
             print('you dead')
         else:
+            asset_data.collision_sfx.play()
             self.player_health -= amount
 
     def get_mask(self):

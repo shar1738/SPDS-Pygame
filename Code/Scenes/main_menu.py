@@ -15,15 +15,12 @@ class MainMenu:
     SPACING = 20
     UI_AREA_RATIO = 9.5 / 10
 
-    def __init__(self, game_state):
+    def __init__(self, game_state, screen):
         self.game_state = game_state
         
         self.screen_width, self.screen_height = SCREEN_WIDTH, SCREEN_HEIGHT
 
-        self.screen = pg.display.set_mode(
-            (self.screen_width, self.screen_height), pg.RESIZABLE
-        )
-        pg.display.set_caption("Main Menu")
+        self.screen = screen
 
         self.bg_image_orig = pg.image.load("Assets/images/exterior/background.png").convert()
         self.button_images_orig = {

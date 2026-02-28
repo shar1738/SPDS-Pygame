@@ -14,14 +14,16 @@ class Main:
 
         pg.display.set_caption("S.P.D.S")
         self.screen = pg.display.set_mode((S.SCREEN_WIDTH, S.SCREEN_HEIGHT), pg.RESIZABLE)
+
         self.clock = pg.time.Clock()
-        self.game_state = GameState()  # Shared state object
-        # Ensure the game state has a valid starting level:
+
+        self.game_state = GameState()
+
         self.game_state.current_level = "Exterior"
 
     def run(self):
         # Run the main menu first
-        menu = SCENES["MainMenu"](self.game_state)
+        menu = SCENES["MainMenu"](self.game_state, self.screen)
         menu.run()
 
         # Main loop for dynamic scene transitions.
@@ -29,11 +31,11 @@ class Main:
             current_level = self.game_state.current_level
 
             if current_level == 'Exterior':
-                scene = SCENES["Exterior"](self.game_state)
+                scene = SCENES["Exterior"](self.game_state, self.screen)
             elif current_level == 'Interior':
-                scene = SCENES["Interior"](self.game_state)
+                scene = SCENES["Interior"](self.game_state, self.screen)
             elif current_level == 'MiniGame':
-                scene = SCENES["MiniGame"](self.game_state)
+                scene = SCENES["MiniGame"](self.game_state, self.screen)
             else:
                 print("Unknown scene. Exiting the game loop.")
                 break

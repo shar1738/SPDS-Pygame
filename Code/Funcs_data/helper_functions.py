@@ -29,3 +29,6 @@ class Animation:
         """
         self.current_frame = 0
         self.last_update = time.time()
+
+def load_scaled_image(path, size):
+    return pg.transform.scale(pg.image.load(path).convert_alpha(), size)

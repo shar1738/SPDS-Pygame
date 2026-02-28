@@ -11,9 +11,7 @@ from Code.Entities.asteroids import Asteroids
 from Code.Entities.pickups import Pickups 
 
 import Code.Funcs_data.asset_data as asset_data
-
-# Pickup manager
-
+from Code.Funcs_data.helper_functions import load_scaled_image
 
 # =================== CONFIGURATION & CONSTANTS ===================
 DISTANCE_RATE = 5
@@ -26,23 +24,29 @@ asset_data.fail_sfx.set_volume(0.5)
 asset_data.ship_basic_sfx.set_volume(0.3)
 asset_data.song.set_volume(0.15)
 
-
-# =================== HELPER FUNCTIONS ===================
-def load_scaled_image(path, size):
-    return pg.transform.scale(pg.image.load(path).convert_alpha(), size)
-
-
 # =================== EXTERIOR SCENE ===================
 class Exterior:
-    def __init__(self, game_state):
+    def __init__(self, game_state, screen):
         # Init Pygame and Mixer
         pg.mixer.init()
+
+        self.screen = screen
+        self.background = load_scaled_image("Assets/images/exterior/background.png",
+                                            (SCREEN_WIDTH, SCREEN_HEIGHT))
+
         self.ship_basic_sfx = asset_data.ship_basic_sfx
+
         self.clock = pg.time.Clock()
+
         self.game_state = game_state
         self.player_ship = Ship(150, 300, game_state)
-        self.override_img = load_scaled_image("Assets/images/objects/ship/basic_ship.png", (200, 200))
-        self.override_img2 = load_scaled_image("Assets/images/objects/ship/hyper_plasma_extreme.png", (200, 200))
+
+        self.override_img = load_scaled_image("Assets/images/objects/ship/basic_ship.png", 
+                                              (SCREEN_WIDTH // 18, SCREEN_HEIGHT // 12.5))
+        
+        self.override_img2 = load_scaled_image("Assets/images/objects/ship/hyper_plasma_extreme.png", 
+                                               (SCREEN_WIDTH // 18, SCREEN_HEIGHT // 12.5))
+
         self.asteroids = Asteroids()
         
         # --- CUSTOMER SELECTION & TIMER SETUP ---
@@ -69,14 +73,9 @@ class Exterior:
             self.game_state.timer_start = self.timer_start
             customer_path = random.choice(asset_data.EXT_UI_ELEMENTS["customers"]["paths"])
             self.game_state.current_customer = customer_path
+            
         self.customer_path = customer_path
         self.customer_img = load_scaled_image(self.customer_path, asset_data.EXT_UI_ELEMENTS["customers"]["size"])
-
-        # --- SCREEN & BACKGROUND ---
-        pg.display.set_caption("S.P.D.S")
-        self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.background = load_scaled_image("Assets/images/exterior/background.png",
-                                            (SCREEN_WIDTH, SCREEN_HEIGHT))
         
         # --- ASTEROIDS & GAME ELEMENTS ---
         self.hole_shown = False
@@ -96,6 +95,7 @@ class Exterior:
         self.pizza_rect = None
 
         # --- UI ELEMENTS ---
+        # Get these from 
         self.health_info = asset_data.EXT_UI_ELEMENTS["health"]
         self.nitro_info = asset_data.EXT_UI_ELEMENTS["nitro"]
         self.customer_LBL_info = asset_data.EXT_UI_ELEMENTS["costumer_label"]
@@ -120,10 +120,12 @@ class Exterior:
 
         # Initial UI images
         self.ui_health_img = self.health_imgs[self.health_index]
-        self.ui_health_rect = self.ui_health_img.get_rect(bottomleft=(SCREEN_WIDTH * .1/10, SCREEN_HEIGHT * 9.999/10))
+        self.ui_health_rect = self.ui_health_img.get_rect(bottomleft=
+                                                        (asset_data.EXT_UI_ELEMENTS["health"]["position"]))
+        
         self.ui_nitro_img = self.nitro_imgs[0]
         self.ui_nitro_rect = self.ui_nitro_img.get_rect(
-            bottomleft=(self.ui_health_rect.right + 10, SCREEN_HEIGHT * 9.999/10)
+            bottomleft=(asset_data.EXT_UI_ELEMENTS["nitro"]["position"])
         )
 
         # Customer and ESC ship images & rects

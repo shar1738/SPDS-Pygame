@@ -6,6 +6,7 @@ from Code.Scenes.exterior import Exterior
 from Code.Scenes.interior import Interior
 from Code.Scenes.main_menu import MainMenu
 from Code.Scenes.mini_game import MiniGame
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 
 from Code.Funcs_data.asset_data import EXT_UI_ELEMENTS 
 
@@ -18,10 +19,10 @@ SCENES = {
 
 class GameState:
     def __init__(self):
-        # Exterior-related properties
+
         self.ex_health = 150
         self.ex_health_index = 0    # Default index (full health)
-        self.ex_health_frame = EXT_UI_ELEMENTS["health"]["paths"][self.ex_health_index]  # Store initial health path
+        self.ex_health_frame = EXT_UI_ELEMENTS["health"]["paths"][self.ex_health_index] 
         
         # Time/distance management
         self.ex_remaining_time = None

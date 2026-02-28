@@ -1,0 +1,27 @@
+**MAIN FIXES**
+
+1.) Fix speed scalling issue for Asteroids
+
+2.) Refector health, health_frame_index, time, and current_customer initialization and move it to GameSate
+
+3.) Add in pizza_timer and replace current logic
+
+4.) Break up all scene files into different functions
+
+5.) Fix scale of UI_ELEMENTS
+
+6.) Make a death screen
+
+**ADDITIONS AFTER MAIN FIXES**
+
+1.) Add in settings to main menu (Save settings between play sessions)
+
+2.) Improve performance of mini_game
+
+3.) add in pizza_box physics in the interior
+
+4.) add in cockpit
+
+5.) add in a progression
+
+6.) imorove pizza_box delivery animation

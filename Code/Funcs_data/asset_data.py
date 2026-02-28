@@ -22,6 +22,7 @@ EXT_UI_ELEMENTS = {
     "health": {
         "paths": [f"Assets/images/exterior/hearts/a_{i}h.png" for i in range(1, 8)],
         "size": (SCREEN_WIDTH // 10, SCREEN_HEIGHT // 10),
+        "position": (SCREEN_WIDTH // 100, SCREEN_HEIGHT + 10),
     },
     "nitro": {
         "paths": [
@@ -29,6 +30,7 @@ EXT_UI_ELEMENTS = {
             "Assets/images/exterior/ui/nitro_unlocked.png",
         ],
         "size": (SCREEN_WIDTH // 10, SCREEN_HEIGHT // 10),
+        "position": (SCREEN_WIDTH // 8, SCREEN_HEIGHT),
     },
     "costumer_label": {
         "paths": ["Assets/images/exterior/customers/costumer_label.png"],

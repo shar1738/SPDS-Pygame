@@ -19,8 +19,8 @@ def load_scaled_image(path, size):
         return pg.Surface(size)  # Returns a blank surface if loading fails
 
 class Interior:
-    def __init__(self, game_state):
-        self.screen = pg.display.get_surface()
+    def __init__(self, game_state, screen):
+        self.screen = screen
         self.game_state = game_state
 
         # --- Load background and interior images ---
@@ -104,8 +104,8 @@ class Interior:
             self.health_info["paths"][self.health_index],
             self.health_info["size"])
         
-        self.ui_health_rect = self.ui_health_img.get_rect(
-            bottomright=(SCREEN_WIDTH * 0.15, SCREEN_HEIGHT * 0.9999))
+        self.ui_health_rect = self.ui_health_img.get_rect(bottomleft=
+                                                        (asset_data.EXT_UI_ELEMENTS["health"]["position"]))
 
         # Customer UI
         if self.game_state.current_customer:
