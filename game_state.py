@@ -1,10 +1,12 @@
 import pygame as pg
 import time
 import random
-import Code.Scenes.exterior as Exterior
-import Code.Scenes.interior as Interior
-import Code.Scenes.main_menu as MainMenu
-import Code.Scenes.mini_game as MiniGame
+
+from Code.Scenes.exterior import Exterior
+from Code.Scenes.interior import Interior
+from Code.Scenes.main_menu import MainMenu
+from Code.Scenes.mini_game import MiniGame
+
 from Code.Funcs_data.asset_data import EXT_UI_ELEMENTS 
 
 SCENES = {

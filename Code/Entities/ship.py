@@ -1,5 +1,4 @@
 import pygame as pg
-from game_state import GameState
 import time
 from Code.Funcs_data.helper_functions import Animation
 
@@ -14,9 +13,9 @@ MAX_ANGLE          = 60  # degrees up and down
 SCALE_FACTOR       = 2
 
 class Ship:
-    def __init__(self, x, y):
+    def __init__(self, x, y, game_state):
         pg.init()
-        self.game_state = GameState()
+        self.game_state = game_state
         self.player_health = self.game_state.ex_health
         self.pos             = pg.Vector2(x, y)
         self.vel             = pg.Vector2(0, 0)
@@ -181,7 +180,3 @@ class Ship:
 
     def get_mask(self):
         return self.mask, self.mask_rect.topleft
-
-
-if __name__ == "__main__":
-    pass

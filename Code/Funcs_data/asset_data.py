@@ -94,11 +94,11 @@ BOOST_ANIMATION = {
 
 BASIC_ANIMATION = {
     "paths": [
-        "Assets/images/ship/fire_mini.png",
-        "Assets/images/ship/fire_small.png",
-        "Assets/images/ship/fire_medium.png",
-        "Assets/images/ship/fire_large.png",
-        "Assets/images/ship/fire_colossal.png",
+        "Assets/images/objects/ship/fire_mini.png",
+        "Assets/images/objects/ship/fire_small.png",
+        "Assets/images/objects/ship/fire_medium.png",
+        "Assets/images/objects/ship/fire_large.png",
+        "Assets/images/objects/ship/fire_colossal.png",
     ],
     "size": (SCREEN_WIDTH // 18, SCREEN_HEIGHT // 12.5),
     "speed": 0.1,
@@ -106,16 +106,16 @@ BASIC_ANIMATION = {
 
 BOOST_ANIMATION = {
     "paths": [
-        "Assets/images/ship/hyper_plasma.png",
-        "Assets/images/ship/hyper_plasma.png",
-        "Assets/images/ship/hyper_plasma.png",
-        "Assets/images/ship/hyper_plasma_extreme.png",
-        "Assets/images/ship/hyper_plasma_extreme.png",
-        "Assets/images/ship/hyper_plasma_extreme.png",
-        "Assets/images/ship/hyper_plasma_extreme.png",
-        "Assets/images/ship/hyper_plasma_extreme.png",
-        "Assets/images/ship/hyper_plasma_extreme.png",
-        "Assets/images/ship/hyper_plasma_extreme.png",
+        "Assets/images/objects/ship/hyper_plasma.png",
+        "Assets/images/objects/ship/hyper_plasma.png",
+        "Assets/images/objects/ship/hyper_plasma.png",
+        "Assets/images/objects/ship/hyper_plasma_extreme.png",
+        "Assets/images/objects/ship/hyper_plasma_extreme.png",
+        "Assets/images/objects/ship/hyper_plasma_extreme.png",
+        "Assets/images/objects/ship/hyper_plasma_extreme.png",
+        "Assets/images/objects/ship/hyper_plasma_extreme.png",
+        "Assets/images/objects/ship/hyper_plasma_extreme.png",
+        "Assets/images/objects/ship/hyper_plasma_extreme.png",
     ],
     "size": (SCREEN_WIDTH // 18, SCREEN_HEIGHT // 12.5),
     "speed": 0.5,

@@ -4,11 +4,9 @@ import random
 import pygame as pg
 
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, FONT
-from game_state import GameState
-
 # from sfx import gooing_sfx, song, fail_sfx
 # from funcs_data.data import EXT_UI_ELEMENTS  # Make sure EXT_UI_ELEMENTS is imported
-from Entities.holes import Holes
+from Code.Entities.holes import Holes
 
 import Code.Funcs_data.asset_data as asset_data
 
@@ -20,7 +18,7 @@ def load_scaled_image(path, size):
         return pg.Surface(size)  # Returns a blank surface if loading fails
 
 class MiniGame:
-    def __init__(self, game_state: GameState):
+    def __init__(self, game_state):
         pg.init()
         pg.mixer.init()
         self.game_state = game_state
@@ -34,21 +32,21 @@ class MiniGame:
         
 
         # Load and scale background image
-        bg_img = pg.image.load("Assets/images/minigame/cockpit_wall.png").convert_alpha()
+        bg_img = pg.image.load("Assets/images/interior/minigame/cockpit_wall.png").convert_alpha()
         self.background = pg.transform.scale(bg_img, screen_size)
 
-        sealed_img = pg.image.load("Assets/images/minigame/hole_sealed.png").convert_alpha()
+        sealed_img = pg.image.load("Assets/images/interior/minigame/hole_sealed.png").convert_alpha()
         self.sealed_img = pg.transform.scale(sealed_img, (254, 254))
         self.sealed_rect = self.sealed_img.get_rect(center=(self.screen_width // 2, int(self.screen_height // 2)))
 
-        sealer_img = pg.image.load("Assets/images/minigame/goon_sealant.png").convert_alpha()
+        sealer_img = pg.image.load("Assets/images/interior/minigame/goon_sealant.png").convert_alpha()
         self.sealer_img = pg.transform.scale(sealer_img, (254, 254))
         self.sealer_rect = self.sealer_img.get_rect()
 
-        self.hole_paths = ['Assets/images/minigame/hole1.png',
-                            'Assets/images/minigame/hole2.png',
-                            'Assets/images/minigame/hole3.png',
-                            'Assets/images/minigame/hole4.png']
+        self.hole_paths = ['Assets/images/interior/minigame/hole1.png',
+                            'Assets/images/interior/minigame/hole2.png',
+                            'Assets/images/interior/minigame/hole3.png',
+                            'Assets/images/interior/minigame/hole4.png']
         
         # Load and scale random hole image
         random_hole_path = random.choice(self.hole_paths)

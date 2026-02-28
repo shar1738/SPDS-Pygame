@@ -24,8 +24,8 @@ class Interior:
         self.game_state = game_state
 
         # --- Load background and interior images ---
-        self.space_bg = load_scaled_image("Assets/images/Background.png", (SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.interior_image = load_scaled_image("Assets/images/interior.png", (SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.space_bg = load_scaled_image("Assets/images/exterior/Background.png", (SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.interior_image = load_scaled_image("Assets/images/interior/interior.png", (SCREEN_WIDTH, SCREEN_HEIGHT))
         self.interior_rect = self.interior_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.interior_rect = self.interior_rect.inflate(SCREEN_WIDTH * -1/4, SCREEN_HEIGHT * -1/3)
         self.interior_rect.y -= SCREEN_HEIGHT * 0.07

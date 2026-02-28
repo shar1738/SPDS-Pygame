@@ -5,7 +5,6 @@ import sys
 import time
 
 from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT, FONT
-from game_state import GameState
 
 from Code.Entities.ship import Ship
 from Code.Entities.asteroids import Asteroids
@@ -42,9 +41,9 @@ class Exterior:
         self.ship_basic_sfx = asset_data.ship_basic_sfx
         self.clock = pg.time.Clock()
         self.game_state = game_state
-        self.player_ship = Ship(150, 300)
-        self.override_img = load_scaled_image("Assets/images/ship/basic_ship.png", (200, 200))
-        self.override_img2 = load_scaled_image("Assets/images/ship/hyper_plasma_extreme.png", (200, 200))
+        self.player_ship = Ship(150, 300, game_state)
+        self.override_img = load_scaled_image("Assets/images/objects/ship/basic_ship.png", (200, 200))
+        self.override_img2 = load_scaled_image("Assets/images/objects/ship/hyper_plasma_extreme.png", (200, 200))
         self.asteroids = Asteroids()
         
         # --- CUSTOMER SELECTION & TIMER SETUP ---
@@ -77,7 +76,7 @@ class Exterior:
         # --- SCREEN & BACKGROUND ---
         pg.display.set_caption("S.P.D.S")
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.background = load_scaled_image("Assets/images/background.png",
+        self.background = load_scaled_image("Assets/images/exterior/background.png",
                                             (SCREEN_WIDTH, SCREEN_HEIGHT))
         
         # --- ASTEROIDS & GAME ELEMENTS ---
@@ -86,11 +85,11 @@ class Exterior:
         self.asteroids.spawn_rand(5)
 
         # --- UI - DELIVERY & PIZZA ---
-        self.delivered_img = pg.image.load("Assets/images/ui/garage_(delivered).png").convert_alpha()
+        self.delivered_img = pg.image.load("Assets/images/exterior/ui/loading_bay.png").convert_alpha()
         self.delivered_img = pg.transform.scale(self.delivered_img, (SCREEN_WIDTH * 8/10, SCREEN_HEIGHT * 8/10))
         self.delivered_rect = self.delivered_img.get_rect(topleft=(SCREEN_WIDTH - 200, 0))
         self.show_delivery = False
-        self.raw_pizza = pg.image.load("Assets/images/pizza_box.png").convert_alpha()
+        self.raw_pizza = pg.image.load("Assets/images/objects/pizza_box.png").convert_alpha()
         self.pizza_img = pg.transform.scale(self.raw_pizza, (128, 128))
         self.pizza_angle = 0.0
         self.pizza_rot_speed = 180.0
@@ -162,7 +161,7 @@ class Exterior:
             self.remaining_time = max(0, self.rand_time - elapsed)
             if self.remaining_time == 0:
                 asset_data.fail_sfx.play()
-                self.game_over("Assets/images/ui/cold_lose.png", 8000)
+                self.game_over("Assets/images/win_lose/cold_lose.png", 8000)
 
     def game_over(self, path, delay):
         asset_data.song.stop()
@@ -238,7 +237,7 @@ class Exterior:
             
             if self.player_health == 0:
                 asset_data.fail_sfx.play()
-                self.game_over("Assets/images/ui/game_over.png", 8000)
+                self.game_over("Assets/images/win_lose/game_over.png", 8000)
             
             if boost:
                 # extra movement for 5× speed
@@ -298,13 +297,9 @@ class Exterior:
                     else:
                         self.screen.blit(pg.transform.rotate(self.pizza_img,self.pizza_angle),self.pizza_rect)
                         asset_data.yay_sfx.play()
-                        self.game_over("Assets/images/ui/win_ui.png",3000)
+                        self.game_over("Assets/images/win_lose/win_ui.png",3000)
 
             if self.hole_shown and time.time()-self.hole_start_time<3:
                 self.screen.blit(self.hole_img, self.hole_rect)
 
             pg.display.flip()
-
-
-if __name__ == "__main__":
-    Exterior(GameState()).run()

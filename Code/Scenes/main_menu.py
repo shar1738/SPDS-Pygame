@@ -2,16 +2,12 @@ import sys
 import pygame as pg
 
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
-from game_state import GameState
-
-from Code.Scenes.exterior import Exterior
-
 
 # Configuration for UI assets
 UI_CONFIG = {
     "buttons": {
-        "title": "Assets/images/ui/title.png",
-        "start": "Assets/images/ui/start.png"
+        "title": "Assets/images/main_menu/title.png",
+        "start": "Assets/images/main_menu/start.png"
     }
 }
 
@@ -31,7 +27,7 @@ class MainMenu:
         )
         pg.display.set_caption("Main Menu")
 
-        self.bg_image_orig = pg.image.load("Assets/images/background.png").convert()
+        self.bg_image_orig = pg.image.load("Assets/images/exterior/background.png").convert()
         self.button_images_orig = {
             name: pg.image.load(path).convert_alpha()
             for name, path in UI_CONFIG["buttons"].items()
@@ -97,18 +93,3 @@ class MainMenu:
             
             self.draw()
             pg.display.flip()
-
-
-if __name__ == "__main__":
-    game_state = GameState()
-    menu = MainMenu(game_state)
-    action = menu.run()
-
-    if action == "start":
-        exterior = Exterior(game_state)
-        exterior.run()
-
-if __name__ == "__main__":
-    menu = MainMenu()
-    action = menu.run()
-    print(f"Action returned: {action}")
