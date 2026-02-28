@@ -1,12 +1,16 @@
-import pygame as pg
 import sys
+import time 
 import random
+import pygame as pg
+
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, FONT
 from game_state import GameState
-import time 
-from sfx import gooing_sfx, song, fail_sfx
-from funcs_data.data import EXT_UI_ELEMENTS  # Make sure EXT_UI_ELEMENTS is imported
+
+# from sfx import gooing_sfx, song, fail_sfx
+# from funcs_data.data import EXT_UI_ELEMENTS  # Make sure EXT_UI_ELEMENTS is imported
 from Entities.holes import Holes
+
+import Code.Funcs_data.asset_data as asset_data
 
 def load_scaled_image(path, size):
     """Safely loads and scales an image."""
@@ -42,9 +46,10 @@ class MiniGame:
         self.sealer_rect = self.sealer_img.get_rect()
 
         self.hole_paths = ['Assets/images/minigame/hole1.png',
-                           'Assets/images/minigame/hole2.png',
-                           'Assets/images/minigame/hole3.png',
-                           'Assets/images/minigame/hole4.png']
+                            'Assets/images/minigame/hole2.png',
+                            'Assets/images/minigame/hole3.png',
+                            'Assets/images/minigame/hole4.png']
+        
         # Load and scale random hole image
         random_hole_path = random.choice(self.hole_paths)
         original_hole = pg.image.load(random_hole_path).convert_alpha()
@@ -92,7 +97,7 @@ class MiniGame:
         self.remaining_time = max(0, self.time - elapsed)
     
     def game_over(self, path, delay=2000):
-        song.stop()
+        asset_data.song.stop()
         game_over_img = pg.image.load(path).convert_alpha()
         rect = game_over_img.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(game_over_img, rect.topleft)
@@ -114,10 +119,10 @@ class MiniGame:
                     sys.exit()
                 elif event.type == pg.MOUSEBUTTONDOWN:
                     self.mouse_down = True
-                    gooing_sfx.set_volume(0.1)
-                    gooing_sfx.play(-1)
+                    asset_data.gooing_sfx.set_volume(0.1)
+                    asset_data.gooing_sfx.play(-1)
                 elif event.type == pg.MOUSEBUTTONUP:
-                    gooing_sfx.set_volume(0)
+                    asset_data.gooing_sfx.set_volume(0)
                     self.mouse_down = False
 
             mouse_x, mouse_y = pg.mouse.get_pos()
@@ -143,8 +148,8 @@ class MiniGame:
 
             # Render the UI Health and Timer in the MiniGame
             # Health UI rendered based on the global game_state health index.
-            health_img = load_scaled_image(EXT_UI_ELEMENTS["health"]["paths"][self.game_state.ex_health_index],
-                                        EXT_UI_ELEMENTS["health"]["size"])
+            health_img = load_scaled_image(asset_data.EXT_UI_ELEMENTS["health"]["paths"][self.game_state.ex_health_index],
+                                        asset_data.EXT_UI_ELEMENTS["health"]["size"])
             health_rect = health_img.get_rect(bottomright=(SCREEN_WIDTH * 1.5/10, SCREEN_HEIGHT * 9.999/10))
             self.screen.blit(health_img, health_rect)
             
@@ -155,7 +160,7 @@ class MiniGame:
             self.screen.blit(scaled_time_text, (10, 40))
 
             if self.remaining_time == 0:
-                fail_sfx.play()
+                asset_data.fail_sfx.play()
                 self.game_over("Assets/images/ui/cold_lose.png", 8000)
 
             if self.hole_filled:
@@ -166,16 +171,16 @@ class MiniGame:
                 self.game_state.ex_health += 25
                 max_health = 150
                 step = 25
-                new_index = min(len(EXT_UI_ELEMENTS["health"]["paths"]) - 1,
+                new_index = min(len(asset_data.EXT_UI_ELEMENTS["health"]["paths"]) - 1,
                                 (max_health - self.game_state.ex_health) // step)
                 self.game_state.ex_health_index = new_index
-                self.game_state.ex_health_frame = EXT_UI_ELEMENTS["health"]["paths"][new_index]
+                self.game_state.ex_health_frame = asset_data.EXT_UI_ELEMENTS["health"]["paths"][new_index]
                 self.game_state.holes -= 1
 
                 # SYNC TIME: Update the global remaining time based on the mini-game countdown.
                 self.game_state.ex_remaining_time = int(self.remaining_time)
 
-                gooing_sfx.set_volume(0)
+                asset_data.gooing_sfx.set_volume(0)
                 pg.time.delay(1000)
 
                 self.game_state.current_level = 'Interior'

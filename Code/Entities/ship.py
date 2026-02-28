@@ -1,9 +1,10 @@
 import pygame as pg
 from game_state import GameState
 import time
-from funcs_data.functions import Animation
-from funcs_data.data import IS_DAMAGED, BASIC_ANIMATION, BOOST_ANIMATION, DAMAGE_ANIMATION
-from sfx import ship_boost_sfx
+from Code.Funcs_data.helper_functions import Animation
+
+# Imported: IS_DAMAGED, BASIC_ANIMATION, BOOST_ANIMATION, DAMAGE_ANIMATION, ship_boost_sfx
+import Code.Funcs_data.asset_data as asset_data
 
 # Constants
 THRUST_POWER       = 0.4
@@ -21,7 +22,7 @@ class Ship:
         self.vel             = pg.Vector2(0, 0)
         self.angle           = 0
         self.is_boosting     = False
-        self.is_damaged      = IS_DAMAGED
+        self.is_damaged      = asset_data.IS_DAMAGED
         self.damage_timer    = 0
 
         # override image state
@@ -35,31 +36,31 @@ class Ship:
 
         # Load and scale animations
         basic_size = (
-            BASIC_ANIMATION["size"][0] * SCALE_FACTOR,
-            BASIC_ANIMATION["size"][1] * SCALE_FACTOR
+            asset_data.BASIC_ANIMATION["size"][0] * SCALE_FACTOR,
+            asset_data.BASIC_ANIMATION["size"][1] * SCALE_FACTOR
         )
         boost_size = (
-            BOOST_ANIMATION["size"][0] * SCALE_FACTOR,
-            BOOST_ANIMATION["size"][1] * SCALE_FACTOR
+            asset_data.BOOST_ANIMATION["size"][0] * SCALE_FACTOR,
+            asset_data.BOOST_ANIMATION["size"][1] * SCALE_FACTOR
         )
         damage_size = (
-            DAMAGE_ANIMATION["size"][0] * SCALE_FACTOR,
-            DAMAGE_ANIMATION["size"][1] * SCALE_FACTOR
+            asset_data.DAMAGE_ANIMATION["size"][0] * SCALE_FACTOR,
+            asset_data.DAMAGE_ANIMATION["size"][1] * SCALE_FACTOR
         )
 
         self.basic_anim = Animation(
-            BASIC_ANIMATION["paths"],
-            speed=BASIC_ANIMATION["speed"],
+            asset_data.BASIC_ANIMATION["paths"],
+            speed=asset_data.BASIC_ANIMATION["speed"],
             size=basic_size
         )
         self.boost_anim = Animation(
-            BOOST_ANIMATION["paths"],
-            speed=BOOST_ANIMATION["speed"],
+            asset_data.BOOST_ANIMATION["paths"],
+            speed=asset_data.BOOST_ANIMATION["speed"],
             size=boost_size
         )
         self.damage_anim = Animation(
-            DAMAGE_ANIMATION["paths"],
-            speed=DAMAGE_ANIMATION["speed"],
+            asset_data.DAMAGE_ANIMATION["paths"],
+            speed=asset_data.DAMAGE_ANIMATION["speed"],
             size=damage_size
         )
 
@@ -109,11 +110,11 @@ class Ship:
         if keys[pg.K_SPACE] and not self.is_boosting:
             if (current_time - self.boost_cooldown_time) > self.boost_cooldown_duration:
                 self.is_boosting = True
-                ship_boost_sfx.play()
+                asset_data.ship_boost_sfx.play()
                 self.boost_start_time = current_time
         if self.is_boosting and (current_time - self.boost_start_time > self.boost_duration):
             self.is_boosting = False
-            ship_boost_sfx.stop()
+            asset_data.ship_boost_sfx.stop()
             self.boost_cooldown_time = current_time
 
         # Damage recovery
@@ -133,8 +134,8 @@ class Ship:
         current_frame = (
             self.override_image or
             (self.damage_anim.get_current_frame() if self.is_damaged else
-             self.boost_anim.get_current_frame() if self.is_boosting else
-             self.basic_anim.get_current_frame())
+            self.boost_anim.get_current_frame() if self.is_boosting else
+            self.basic_anim.get_current_frame())
         )
         rotated = pg.transform.rotozoom(current_frame, -self.angle, 1)
         self.image = rotated

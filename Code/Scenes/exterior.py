@@ -1,20 +1,19 @@
 # =================== IMPORTS ===================
 import pygame as pg
 import random
-import json
 import sys
 import time
 
 from settings import FPS, SCREEN_WIDTH, SCREEN_HEIGHT, FONT
 from game_state import GameState
 
-from Entities.ship import Ship
-from Entities.asteroids import Asteroids
-from Entities.pickups import Pickups 
+from Code.Entities.ship import Ship
+from Code.Entities.asteroids import Asteroids
+from Code.Entities.pickups import Pickups 
 
 import Code.Funcs_data.asset_data as asset_data
 
- # Pickup manager
+# Pickup manager
 
 
 # =================== CONFIGURATION & CONSTANTS ===================
@@ -73,8 +72,7 @@ class Exterior:
             customer_path = random.choice(asset_data.EXT_UI_ELEMENTS["customers"]["paths"])
             self.game_state.current_customer = customer_path
         self.customer_path = customer_path
-        self.customer_img = load_scaled_image(self.customer_path,
-                                              asset_data.EXT_UI_ELEMENTS["customers"]["size"])
+        self.customer_img = load_scaled_image(self.customer_path, asset_data.EXT_UI_ELEMENTS["customers"]["size"])
 
         # --- SCREEN & BACKGROUND ---
         pg.display.set_caption("S.P.D.S")
@@ -131,14 +129,11 @@ class Exterior:
         )
 
         # Customer and ESC ship images & rects
-        self.customer_LBL_img = load_scaled_image(self.customer_LBL_info["paths"][0],
-                                                  self.customer_LBL_info["size"])
-        self.esc_ship_img = load_scaled_image(self.esc_info["paths"][0],
-                                              self.esc_info["size"])
+        self.customer_LBL_img = load_scaled_image(self.customer_LBL_info["paths"][0], self.customer_LBL_info["size"])
+        self.esc_ship_img = load_scaled_image(self.esc_info["paths"][0], self.esc_info["size"])
         self.customer_rect = self.customer_img.get_rect(topright=(SCREEN_WIDTH, 0))
         self.customer_lbl_rect = self.customer_LBL_img.get_rect(topright=(SCREEN_WIDTH * 1.014, SCREEN_HEIGHT // 12))
-        self.esc_ship_rect = self.esc_ship_img.get_rect(bottomright=(SCREEN_WIDTH - 10,
-                                                                     SCREEN_HEIGHT - 10))
+        self.esc_ship_rect = self.esc_ship_img.get_rect(bottomright=(SCREEN_WIDTH - 10, SCREEN_HEIGHT - 10))
         self.hole_rect = self.hole_img.get_rect(center=(SCREEN_WIDTH // 2,
                                                         SCREEN_HEIGHT // 2))
 

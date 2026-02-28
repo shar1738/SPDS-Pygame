@@ -1,10 +1,8 @@
-import sys
 import pygame as pg
 
 pg.init()
-info = pg.display.Info()
 
-SCREEN_WIDTH = info.current_w - 25 
-SCREEN_HEIGHT = info.current_h - 75 
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
 FPS = 120
 FONT = 'Assets/fonts/retro.TTF'

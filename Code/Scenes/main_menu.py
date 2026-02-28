@@ -1,8 +1,11 @@
+import sys
 import pygame as pg
-from Code.Scenes.exterior import Exterior
+
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 from game_state import GameState
-import sys
+
+from Code.Scenes.exterior import Exterior
+
 
 # Configuration for UI assets
 UI_CONFIG = {

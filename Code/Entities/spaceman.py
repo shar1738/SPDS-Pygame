@@ -1,19 +1,22 @@
 import pygame as pg
-from funcs_data.functions import Animation
+
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
+
+from Code.Funcs_data.helper_functions import Animation
 
 SPACEMAN_MOVE_ANIMATION = {
     "paths": [
-        "Assets/images/spaceman/spaceman1.png",
-        "Assets/images/spaceman/spaceman2.png",
-        "Assets/images/spaceman/spaceman3.png",
+        "Assets/images/interior/spaceman/spaceman1.png",
+        "Assets/images/interior/spaceman/spaceman2.png",
+        "Assets/images/interior/spaceman/spaceman3.png",
     ],
-    "size":  (SCREEN_WIDTH // 7, SCREEN_HEIGHT // 7),
+    "size": (SCREEN_WIDTH // 7, SCREEN_HEIGHT // 7),
     "speed": 0.3,
 }
 
 MOVE_SPEED = 0.1
 FRICTION = 0.96
+
 
 class Spaceman:
     def __init__(self, x, y, boundary_rect=None):
@@ -22,7 +25,7 @@ class Spaceman:
         self.anim = Animation(
             SPACEMAN_MOVE_ANIMATION["paths"],
             size=SPACEMAN_MOVE_ANIMATION["size"],
-            speed=SPACEMAN_MOVE_ANIMATION["speed"]
+            speed=SPACEMAN_MOVE_ANIMATION["speed"],
         )
         self.image = self.anim.get_current_frame()
         self.rect = self.image.get_rect(center=self.pos)
@@ -72,7 +75,6 @@ class Spaceman:
             self.rect.clamp_ip(screen_rect)
 
         self.pos = pg.Vector2(self.rect.center)
-
 
     def draw(self, surface):
         surface.blit(self.image, self.rect.topleft)

@@ -1,7 +1,9 @@
 import pygame as pg
 import random
+
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
-from sfx import pickup_sfx
+
+import Code.Funcs_data.asset_data as asset_data
 
 def load_scaled_image(path, size):
     try:
@@ -16,9 +18,9 @@ class Pickups:
         Initializes the pickups manager.
         
         Parameters:
-          move_speed (float): The horizontal speed at which pickups move left.
-          effect (str): 'increase' or 'decrease'; defines the effect on the player.
-          amount (number): The base amount to adjust the player's stat upon pickup.
+            move_speed (float): The horizontal speed at which pickups move left.
+            effect (str): 'increase' or 'decrease'; defines the effect on the player.
+            amount (number): The base amount to adjust the player's stat upon pickup.
         """
         self.move_speed = move_speed
         self.effect = effect
@@ -28,7 +30,7 @@ class Pickups:
         self.pickup_list = []
 
         # Load the pickup asset (for example, a pizza boost image).
-        self.asset = load_scaled_image("Assets/images/pizza_box.png", (75, 75))
+        self.asset = load_scaled_image("Assets/images/objects/pizza_box.png", (75, 75))
         
         # Spawn timing, in milliseconds.
         self.spawn_timer = random.uniform(20000, 45000)  
@@ -84,7 +86,7 @@ class Pickups:
             pickup_rect = pg.Rect(pickup["pos"][0], pickup["pos"][1], 50, 50)
             if player.rect.colliderect(pickup_rect):
                 collided.append(pickup)
-                pickup_sfx.play()
+                asset_data.pickup_sfx.play()
                 if self.effect == "increase":
                     # Increase the ship's boosting speed by self.amount.
                     # Make sure your Ship class has a boost_speed attribute.

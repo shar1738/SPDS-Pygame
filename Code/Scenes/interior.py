@@ -2,9 +2,12 @@ import pygame as pg
 import sys
 import time
 import random
-from Entities.spaceman import Spaceman
-from Entities.holes import Holes
+
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FONT, FPS
+
+from Code.Entities.spaceman import Spaceman
+from Code.Entities.holes import Holes
+
 import Code.Funcs_data.asset_data as asset_data
 
 def load_scaled_image(path, size):

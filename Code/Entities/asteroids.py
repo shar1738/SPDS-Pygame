@@ -1,15 +1,16 @@
 import pygame as pg
 import random
-from sfx import collision_sfx, ship_boost_sfx
-from funcs_data.functions import Animation
-from funcs_data.data import ASTEROID_CONFIG, ASTEROID_SIZE
-import settings as S
 import time
 
-ASTEROID_SIZE = ASTEROID_SIZE
+import settings as S
+from Code.Funcs_data.helper_functions import Animation
+
+import Code.Funcs_data.asset_data as asset_data
+
+ASTEROID_SIZE = asset_data.ASTEROID_SIZE
 DAMAGE_AMOUNT = 25
 
-collision_sfx.set_volume(0.5)
+asset_data.collision_sfx.set_volume(0.5)
 
 class Asteroids:
     def __init__(self):
@@ -18,7 +19,7 @@ class Asteroids:
                 "image": Animation(cfg["paths"], cfg.get("speed", 0.1), cfg["size"]).get_current_frame(),
                 "hitbox_offset": cfg["hitbox_offset"],
             }
-            for name, cfg in ASTEROID_CONFIG.items()
+            for name, cfg in asset_data.ASTEROID_CONFIG.items()
         }
         self.asteroid_list = []
         self.spawn_timer = 0
@@ -135,10 +136,10 @@ class Asteroids:
                     # Damage the ship only on first collision that triggers invincibility
                     ship.take_damage(DAMAGE_AMOUNT)
                     ship.is_boosting = False
-                    ship_boost_sfx.stop()
+                    asset_data.ship_boost_sfx.stop()
                     ship.is_damaged = True
                     ship.damage_timer = 0.5
-                    collision_sfx.play()
+                    asset_data.collision_sfx.play()
                 to_remove.append(a)
                 continue
 

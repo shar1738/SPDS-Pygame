@@ -1,8 +1,9 @@
 import pygame as pg
+
 import settings as S
-from Code.Scenes import game_state as GameState 
-from Code.Scenes.scene_manager import SCENES
-from Code.Funcs_data.sfx import song 
+import game_state as game_state
+
+from Code.Funcs_data.asset_data import song 
 
 class Main:
     def __init__(self):
@@ -14,13 +15,13 @@ class Main:
         pg.display.set_caption("S.P.D.S")
         self.screen = pg.display.set_mode((S.SCREEN_WIDTH, S.SCREEN_HEIGHT))
         self.clock = pg.time.Clock()
-        self.game_state = GameState()  # Shared state object
+        self.game_state = game_state()  # Shared state object
         # Ensure the game state has a valid starting level:
         self.game_state.current_level = "Exterior"
 
     def run(self):
         # Run the main menu first
-        menu = SCENES["MainMenu"](self.game_state)
+        menu = game_state.SCENES["MainMenu"](self.game_state)
         menu.run()
 
         # Main loop for dynamic scene transitions.
@@ -28,11 +29,11 @@ class Main:
             current_level = self.game_state.current_level
 
             if current_level == 'Exterior':
-                scene = SCENES["Exterior"](self.game_state)
+                scene = game_state.SCENES["Exterior"](self.game_state)
             elif current_level == 'Interior':
-                scene = SCENES["Interior"](self.game_state)
+                scene = game_state.SCENES["Interior"](self.game_state)
             elif current_level == 'MiniGame':
-                scene = SCENES["MiniGame"](self.game_state)
+                scene = game_state.SCENES["MiniGame"](self.game_state)
             else:
                 print("Unknown scene. Exiting the game loop.")
                 break

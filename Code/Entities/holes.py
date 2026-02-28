@@ -1,6 +1,7 @@
 import pygame as pg
 import random
 
+
 class Holes:
     # Class‐level storage to persist hole positions across instances
     hole_positions = []
@@ -9,15 +10,15 @@ class Holes:
         self.interior_rect = interior_rect
         self.amount = amount  # Number of holes desired
         self.hole_paths = [
-            'Assets/images/minigame/hole1.png',
-            'Assets/images/minigame/hole2.png',
-            'Assets/images/minigame/hole3.png',
-            'Assets/images/minigame/hole4.png'
+            "Assets/images/interior/minigame/hole1.png",
+            "Assets/images/interior/minigame/hole2.png",
+            "Assets/images/interior/minigame/hole3.png",
+            "Assets/images/interior/minigame/hole4.png",
         ]
 
         # Instance lists
-        self.holes = []              # List of (surface, rect)
-        self.hole_positions = []     # List of (x, y) tuples
+        self.holes = []  # List of (surface, rect)
+        self.hole_positions = []  # List of (x, y) tuples
 
         # Recreate at stored positions if matching count, else fresh spawn
         if Holes.hole_positions and len(Holes.hole_positions) == self.amount:
@@ -48,19 +49,17 @@ class Holes:
         if random.choice([True, False]):
             # Top area
             x = random.randint(
-                self.interior_rect.left,
-                self.interior_rect.right - hole.get_width()
+                self.interior_rect.left, self.interior_rect.right - hole.get_width()
             )
             y = self.interior_rect.top + 40
         else:
             # Center area
             x = random.randint(
-                self.interior_rect.left,
-                self.interior_rect.right - hole.get_width()
+                self.interior_rect.left, self.interior_rect.right - hole.get_width()
             )
             y = random.randint(
                 self.interior_rect.top + self.interior_rect.height // 3,
-                self.interior_rect.bottom - self.interior_rect.height // 3
+                self.interior_rect.bottom - self.interior_rect.height // 3,
             )
 
         rect = hole.get_rect(topleft=(x, y))
