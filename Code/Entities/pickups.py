@@ -104,3 +104,5 @@ class Pickups:
         Use this method if you want to change how much the pickup affects the ship.
         """
         self.amount = new_amount
+
+    

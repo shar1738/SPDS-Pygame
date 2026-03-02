@@ -1,6 +1,6 @@
 import pygame as pg
 import time
-from Code.Funcs_data.helper_functions import Animation
+from Code.Funcs_data.helper_functions import Animation, load_scaled_image
 
 # Imported: IS_DAMAGED, BASIC_ANIMATION, BOOST_ANIMATION, DAMAGE_ANIMATION, ship_boost_sfx
 import Code.Funcs_data.asset_data as asset_data
@@ -9,14 +9,22 @@ import Code.Funcs_data.asset_data as asset_data
 THRUST_POWER       = 0.4
 FRICTION           = 0.97
 ROTATION_SPEED     = 4
-MAX_ANGLE          = 60  # degrees up and down
+MAX_ANGLE          = 60
 SCALE_FACTOR       = 2
 
 class Ship:
     def __init__(self, x, y, game_state):
         pg.init()
         self.game_state = game_state
-        self.player_health = self.game_state.ex_health
+
+        self.health_info = asset_data.EXT_UI_ELEMENTS["health"]
+
+        self.health_imgs = [
+            load_scaled_image(path, self.health_info["size"])
+            for path in self.health_info["paths"]
+        ]
+        self.player_health = self.game_state.player_health
+
         self.pos             = pg.Vector2(x, y)
         self.vel             = pg.Vector2(0, 0)
         self.angle           = 0
@@ -66,6 +74,8 @@ class Ship:
         self.image = self.basic_anim.get_current_frame()
         self.rect  = self.image.get_rect(center=self.pos)
 
+        self.mask = pg.mask.from_surface(self.image)
+
         # Boost timers
         self.boost_start_time = 0
         self.boost_duration = 5
@@ -89,32 +99,7 @@ class Ship:
             self.is_damaged = False
             self.basic_anim.reset()
 
-        # Rotation
-        if keys[pg.K_LEFT]:
-            self.angle -= ROTATION_SPEED
-        if keys[pg.K_RIGHT]:
-            self.angle += ROTATION_SPEED
-        self.angle = max(-MAX_ANGLE, min(MAX_ANGLE, self.angle))
-
-        # Thrust
-        if keys[pg.K_UP]:
-            forward = pg.Vector2(0, -1).rotate(self.angle)
-            self.vel += forward * THRUST_POWER
-        if keys[pg.K_DOWN]:
-            backward = pg.Vector2(0, 1).rotate(self.angle)
-            self.vel += backward * (THRUST_POWER * 0.5)
-
-        # Boost detection
-        current_time = time.time()
-        if keys[pg.K_SPACE] and not self.is_boosting:
-            if (current_time - self.boost_cooldown_time) > self.boost_cooldown_duration:
-                self.is_boosting = True
-                asset_data.ship_boost_sfx.play()
-                self.boost_start_time = current_time
-        if self.is_boosting and (current_time - self.boost_start_time > self.boost_duration):
-            self.is_boosting = False
-            asset_data.ship_boost_sfx.stop()
-            self.boost_cooldown_time = current_time
+        self.handle_input(keys)
 
         # Damage recovery
         if self.is_damaged:
@@ -145,11 +130,10 @@ class Ship:
         pg.draw.rect(hitbox_surface, (255,255,255), (0,0,self.hitbox_length,self.hitbox_height))
         rotated_hitbox = pg.transform.rotozoom(hitbox_surface, -self.angle, 1)
         offset_vector = pg.Vector2(200, 0).rotate(-self.angle)
-        self.mask = pg.mask.from_surface(self.image)
         self.mask_rect = rotated_hitbox.get_rect(center=(self.pos + offset_vector))
 
     def draw(self, surface):
-        # expire override in draw as well, in case update isn't called
+
         if self.override_image and (time.time() - self._override_start > self._override_duration):
             self.override_image = None
             self.basic_anim.reset()
@@ -173,11 +157,55 @@ class Ship:
         surface.blit(self.image, self.rect.topleft)
 
     def take_damage(self, amount: int):
+
         if self.player_health < 0:
             print('you dead')
         else:
             asset_data.collision_sfx.play()
             self.player_health -= amount
 
+        # Update health UI based on current health
+        max_health = 150
+        step = 25
+
+        # **HEALTH**
+        self.game_state.health_index = min(len(self.health_info["paths"]) - 1,
+                                (max_health - self.game_state.player_health) // step)
+
     def get_mask(self):
         return self.mask, self.mask_rect.topleft
+
+    def handle_input(self, keys):
+        # Rotation
+        if keys[pg.K_LEFT]:
+            self.angle -= ROTATION_SPEED
+        if keys[pg.K_RIGHT]:
+            self.angle += ROTATION_SPEED
+        self.angle = max(-MAX_ANGLE, min(MAX_ANGLE, self.angle))
+
+        # Thrust
+        if keys[pg.K_UP]:
+            forward = pg.Vector2(0, -1).rotate(self.angle)
+            self.vel += forward * THRUST_POWER
+        if keys[pg.K_DOWN]:
+            backward = pg.Vector2(0, 1).rotate(self.angle)
+            self.vel += backward * (THRUST_POWER * 0.5)
+
+        for e in pg.event.get():
+                if e.type == pg.QUIT:
+                    pg.quit()
+                elif e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
+                    self.game_state.current_level = 'Interior'
+                    return self.game_state.current_level
+
+        # Boost detection
+        current_time = time.time()
+        if keys[pg.K_SPACE] and not self.is_boosting:
+            if (current_time - self.boost_cooldown_time) > self.boost_cooldown_duration:
+                self.is_boosting = True
+                asset_data.ship_boost_sfx.play()
+                self.boost_start_time = current_time
+        if self.is_boosting and (current_time - self.boost_start_time > self.boost_duration):
+            self.is_boosting = False
+            asset_data.ship_boost_sfx.stop()
+            self.boost_cooldown_time = current_time

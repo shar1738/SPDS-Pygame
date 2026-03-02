@@ -1,6 +1,6 @@
 **MAIN FIXES**
 
-1.) Fix speed scalling issue for Asteroids
+1.) Fix speed scalling issue for Asteroids (Fixed but figure out how to scale things with screen)
 
 2.) Refector health, health_frame_index, time, and current_customer initialization and move it to GameSate
 

@@ -47,7 +47,7 @@ class Asteroids:
 
             x = self.calc_right()
             y = random.randint(0, S.SCREEN_HEIGHT - img.get_height())
-            speed = random.uniform(7, 15)
+            speed = random.uniform(5, 10)
 
             self.asteroid_list.append({
                 "image": img,
