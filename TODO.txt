@@ -1,4 +1,5 @@
 **MAIN FIXES**
+Fix health, time, end_scene and other broken logic from refactoring exterior class
 
 1.) Fix speed scalling issue for Asteroids (Fixed but figure out how to scale things with screen)
 
